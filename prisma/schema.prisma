@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PREMIUM
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum SupplierType {
+  FABRIC_MILL
+  DYE_HOUSE
+  GARMENT_FACTORY
+  TRIM_SUPPLIER
+  OTHER
+}
+
+enum CertificationType {
+  GOTS
+  OEKO_TEX
+  SA8000
+  BSCI
+  FAIR_WEAR
+  ISO14001
+  OTHER
+}
+
+enum CertificationStatus {
+  VALID
+  EXPIRING_SOON
+  EXPIRED
+}
+
+enum AlertType {
+  NINETY_DAY
+  THIRTY_DAY
+  SEVEN_DAY
+  EXPIRED
+}
+
+// Models
+model Brand {
+  id                String           @id @default(cuid())
+  clerk_user_id     String           @unique
+  company_name      String
+  email             String           @unique
+  country           String?
+  subscription_tier SubscriptionTier @default(FREE)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+
+  // Relations
+  suppliers Supplier[]
+  users     User[]
+  alerts    Alert[]
+
+  @@index([clerk_user_id])
+  @@index([email])
+  @@map("brands")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  clerk_user_id String   @unique
+  brand_id      String
+  email         String   @unique
+  full_name     String
+  role          UserRole @default(VIEWER)
+  created_at    DateTime @default(now())
+
+  // Relations
+  brand Brand @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+
+  @@index([clerk_user_id])
+  @@index([brand_id])
+  @@index([email])
+  @@map("users")
+}
+
+model Supplier {
+  id            String       @id @default(cuid())
+  brand_id      String
+  name          String
+  contact_email String?
+  contact_phone String?
+  country       String
+  address       String?
+  supplier_type SupplierType
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+
+  // Relations
+  brand          Brand           @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  certifications Certification[]
+
+  @@index([brand_id])
+  @@index([name])
+  @@index([country])
+  @@index([supplier_type])
+  @@map("suppliers")
+}
+
+model Certification {
+  id                 String              @id @default(cuid())
+  supplier_id        String
+  certification_type CertificationType
+  certification_name String
+  issuing_body       String
+  issue_date         DateTime
+  expiry_date        DateTime
+  document_url       String
+  status             CertificationStatus @default(VALID)
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+
+  // Relations
+  supplier Supplier @relation(fields: [supplier_id], references: [id], onDelete: Cascade)
+  alerts   Alert[]
+
+  @@index([supplier_id])
+  @@index([expiry_date])
+  @@index([status])
+  @@index([created_at])
+  @@index([certification_type])
+  @@map("certifications")
+}
+
+model Alert {
+  id               String    @id @default(cuid())
+  certification_id String
+  brand_id         String
+  alert_type       AlertType
+  sent_at          DateTime?
+  is_read          Boolean   @default(false)
+  created_at       DateTime  @default(now())
+
+  // Relations
+  certification Certification @relation(fields: [certification_id], references: [id], onDelete: Cascade)
+  brand         Brand         @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+
+  @@index([brand_id, is_read])
+  @@index([certification_id])
+  @@index([created_at])
+  @@index([alert_type])
+  @@map("alerts")
+}
