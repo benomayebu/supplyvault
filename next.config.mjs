@@ -58,7 +58,9 @@ const nextConfig = {
       "https://*.clerk.com",
       "https://*.clerk.dev",
       "https://*.clerk.accounts.dev",
+      "https://challenges.cloudflare.com", // Cloudflare CAPTCHA
       "https://vercel.live",
+      "blob:", // Web workers
     ];
     
     if (isDev) {
@@ -77,8 +79,9 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com",
-              "frame-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
+              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com https://clerk-telemetry.com wss://*.clerk.com wss://*.clerk.accounts.dev",
+              "frame-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
