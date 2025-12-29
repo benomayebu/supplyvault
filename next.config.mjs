@@ -57,6 +57,7 @@ const nextConfig = {
       "'unsafe-inline'",
       "https://*.clerk.com",
       "https://*.clerk.dev",
+      "https://*.clerk.accounts.dev",
       "https://vercel.live",
     ];
     
@@ -76,8 +77,8 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com",
-              "frame-src 'self' https://*.clerk.com https://*.clerk.dev",
+              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com",
+              "frame-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
