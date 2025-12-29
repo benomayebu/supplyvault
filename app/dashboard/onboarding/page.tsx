@@ -1,4 +1,4 @@
-import { getCurrentUser, getCurrentBrand } from "@/lib/auth";
+import { getCurrentUser, getCurrentBrand, getCurrentUserRecord } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 
@@ -14,6 +14,14 @@ export default async function OnboardingPage() {
   if (!brand) {
     // Brand should exist from webhook, but if not, redirect to sign-in
     redirect("/sign-in");
+  }
+
+  // Check if user has completed onboarding
+  // UserRecord is created by webhook when user signs up
+  // If UserRecord exists, user has completed onboarding, redirect to dashboard
+  const userRecord = await getCurrentUserRecord();
+  if (userRecord) {
+    redirect("/dashboard");
   }
 
   const userEmail = user.emailAddresses[0]?.emailAddress || "";

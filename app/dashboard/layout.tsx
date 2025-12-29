@@ -9,6 +9,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Note: Onboarding redirects are handled in individual pages:
+  // - Onboarding page checks if already onboarded and redirects to dashboard
+  // - Other dashboard pages check for brand and redirect to onboarding if needed
   return (
     <ErrorBoundary>
       <DashboardLayoutWrapper>
