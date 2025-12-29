@@ -36,6 +36,8 @@ export async function getCurrentBrand() {
         email: true,
         country: true,
         subscription_tier: true,
+        created_at: true,
+        updated_at: true,
       },
     });
 

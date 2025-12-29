@@ -1,4 +1,4 @@
-import { getCurrentUser, getCurrentBrand, getCurrentUserRecord } from "@/lib/auth";
+import { getCurrentUser, getCurrentBrand } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 
@@ -17,10 +17,11 @@ export default async function OnboardingPage() {
   }
 
   // Check if user has completed onboarding
-  // UserRecord is created by webhook when user signs up
-  // If UserRecord exists, user has completed onboarding, redirect to dashboard
-  const userRecord = await getCurrentUserRecord();
-  if (userRecord) {
+  // The webhook creates the Brand with default values when user signs up
+  // The onboarding form updates the Brand (company_name, country)
+  // If updated_at > created_at, it means the brand was updated by the onboarding form
+  const hasCompletedOnboarding = brand.updated_at > brand.created_at;
+  if (hasCompletedOnboarding) {
     redirect("/dashboard");
   }
 
