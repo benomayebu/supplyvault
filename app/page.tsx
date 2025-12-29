@@ -1,16 +1,10 @@
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 
 export default async function Home() {
   const user = await getCurrentUser();
 
-  // If user is authenticated, redirect to dashboard
-  if (user) {
-    redirect("/dashboard");
-  }
-
-  // Show landing page for unauthenticated users
+  // Always show landing page - homepage should always be accessible
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-primary-navy to-primary-navy/90">
       <div className="container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
@@ -31,18 +25,29 @@ export default async function Home() {
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
-          <Link
-            href="/sign-up"
-            className="rounded-lg bg-[#3BCEAC] px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-[#3BCEAC]/90"
-          >
-            Get Started
-          </Link>
-          <Link
-            href="/sign-in"
-            className="rounded-lg border-2 border-white px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-white/10"
-          >
-            Sign In
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="rounded-lg bg-[#3BCEAC] px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-[#3BCEAC]/90"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/sign-up"
+                className="rounded-lg bg-[#3BCEAC] px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-[#3BCEAC]/90"
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/sign-in"
+                className="rounded-lg border-2 border-white px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Sign In
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="mt-16 grid gap-8 md:grid-cols-3">
