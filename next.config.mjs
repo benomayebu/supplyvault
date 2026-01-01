@@ -50,7 +50,7 @@ const nextConfig = {
   // Headers configuration for CSP
   async headers() {
     const isDev = process.env.NODE_ENV === "development";
-    
+
     // Build script-src directive - include unsafe-eval only in development
     const scriptSrc = [
       "'self'",
@@ -59,11 +59,23 @@ const nextConfig = {
       "https://*.clerk.dev",
       "https://vercel.live",
     ];
-    
+
     if (isDev) {
       scriptSrc.push("'unsafe-eval'"); // Required for Next.js webpack in dev mode
     }
-    
+
+    // Build font-src directive - allow browser extensions in development
+    const fontSrc = [
+      "'self'",
+      "data:",
+      "https://fonts.gstatic.com",
+    ];
+
+    if (isDev) {
+      // Allow browser extensions (Chrome: chrome-extension://, Firefox: moz-extension://)
+      fontSrc.push("chrome-extension:", "moz-extension:");
+    }
+
     return [
       {
         source: "/:path*",
@@ -75,7 +87,7 @@ const nextConfig = {
               `script-src ${scriptSrc.join(" ")}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
-              "font-src 'self' data: https://fonts.gstatic.com",
+              `font-src ${fontSrc.join(" ")}`,
               "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com",
               "frame-src 'self' https://*.clerk.com https://*.clerk.dev",
               "object-src 'none'",
