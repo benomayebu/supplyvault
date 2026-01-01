@@ -1,4 +1,8 @@
-import { getCurrentUser, getCurrentBrand, getCurrentUserRecord } from "@/lib/auth";
+import {
+  getCurrentUser,
+  getCurrentBrand,
+  getCurrentUserRecord,
+} from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 
@@ -38,7 +42,8 @@ export default async function OnboardingPage() {
         <div className="mx-auto max-w-2xl">
           <h1 className="text-3xl font-bold text-red-600">Setup Error</h1>
           <p className="mt-4 text-lg text-gray-600">
-            There was an error setting up your account. Please try refreshing the page.
+            There was an error setting up your account. Please try refreshing
+            the page.
           </p>
         </div>
       );
@@ -65,7 +70,8 @@ export default async function OnboardingPage() {
         <div className="mx-auto max-w-2xl">
           <h1 className="text-3xl font-bold text-red-600">Setup Error</h1>
           <p className="mt-4 text-lg text-gray-600">
-            There was an error setting up your account. Please try refreshing the page.
+            There was an error setting up your account. Please try refreshing
+            the page.
           </p>
         </div>
       );
