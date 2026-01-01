@@ -1,14 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 
-export default async function SignUpPage() {
-  // If user is already signed in, redirect to dashboard
-  const user = await currentUser();
-  if (user) {
-    redirect("/dashboard");
-  }
-
+export default function SignUpPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background-light">
       <div className="w-full max-w-md">
@@ -26,7 +18,7 @@ export default async function SignUpPage() {
           routing="path"
           path="/sign-up"
           signInUrl="/sign-in"
-          redirectUrl="/dashboard/onboarding"
+          fallbackRedirectUrl="/dashboard/onboarding"
         />
       </div>
     </div>
