@@ -1,6 +1,14 @@
 import { SignIn } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  // If user is already signed in, redirect to dashboard
+  const user = await currentUser();
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background-light">
       <div className="w-full max-w-md">
