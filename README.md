@@ -1,8 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SupplyVault
 
-## Getting Started
+A comprehensive supplier compliance management platform built with Next.js, designed to help brands track and manage their suppliers' certifications and compliance documents.
 
-First, run the development server:
+## Features
+
+- 🔐 Secure authentication with Clerk
+- 📊 Supplier management and tracking
+- 📜 Certification document storage and expiry tracking
+- 🔔 Automated expiry alerts (90-day, 30-day, 7-day warnings)
+- 👥 Team collaboration with role-based access control
+- 📈 Compliance reporting and analytics
+- 🌍 Multi-country supplier support
+
+## Quick Start
+
+**First time setup?** See the [SETUP.md](./SETUP.md) guide for detailed setup instructions.
+
+### Getting Started
+
+1. Clone the repository and install dependencies:
+
+```bash
+npm install
+```
+
+2. Set up your environment variables (see [SETUP.md](./SETUP.md)):
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your database and Clerk credentials
+```
+
+3. Set up the database:
+
+```bash
+npx prisma migrate dev
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
@@ -14,11 +49,27 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework:** [Next.js 14](https://nextjs.org) (App Router)
+- **Language:** TypeScript
+- **Authentication:** [Clerk](https://clerk.com)
+- **Database:** PostgreSQL with [Prisma](https://prisma.io) ORM
+- **Styling:** Tailwind CSS
+- **Deployment:** Vercel
+
+## Project Structure
+
+```
+supplyvault/
+├── app/                    # Next.js app router pages
+├── components/             # React components
+├── lib/                    # Utility functions and database client
+├── prisma/                 # Database schema and migrations
+└── public/                 # Static assets
+```
 
 ## Learn More
 
