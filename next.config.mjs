@@ -75,7 +75,8 @@ const nextConfig = {
               `script-src ${scriptSrc.join(" ")}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
-              "font-src 'self' data: https://fonts.gstatic.com",
+              // In development, allow browser extensions to load fonts; in production, restrict to known sources
+              `font-src 'self' data: https://fonts.gstatic.com${isDev ? " blob: chrome-extension: moz-extension:" : ""}`,
               "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com",
               "frame-src 'self' https://*.clerk.com https://*.clerk.dev",
               "object-src 'none'",
