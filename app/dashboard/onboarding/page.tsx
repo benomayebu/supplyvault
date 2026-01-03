@@ -1,6 +1,10 @@
-import { getCurrentUser } from "@/lib/auth";
+import {
+  getCurrentUser,
+  getCurrentBrand,
+  getCurrentUserRecord,
+} from "@/lib/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { prisma } from "@/lib/db";
 
 export default async function OnboardingPage() {
   const user = await getCurrentUser();
@@ -9,31 +13,71 @@ export default async function OnboardingPage() {
     redirect("/sign-in");
   }
 
-  return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="text-3xl font-bold text-primary-navy">
-        Welcome to SupplyVault!
-      </h1>
-      <p className="mt-4 text-lg text-gray-600">
-        Let&apos;s get your account set up. Complete your company profile to get
-        started.
-      </p>
+  // Check if brand and user records already exist
+  const existingBrand = await getCurrentBrand();
+  const existingUserRecord = await getCurrentUserRecord();
 
-      <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-xl font-semibold text-primary-navy">
-          Complete Your Profile
-        </h2>
-        <p className="mt-2 text-gray-600">
-          Add your company details to start managing your supply chain
-          certifications.
-        </p>
-        <Link
-          href="/dashboard/settings"
-          className="mt-4 inline-block rounded-md bg-primary-navy px-4 py-2 text-white hover:bg-primary-navy/90"
-        >
-          Complete Setup
-        </Link>
-      </div>
-    </div>
-  );
+  // If both records exist, redirect to settings
+  if (existingBrand && existingUserRecord) {
+    redirect("/dashboard/settings");
+  }
+
+  // Auto-create brand record if it doesn't exist
+  let brand = existingBrand;
+  if (!brand) {
+    try {
+      brand = await prisma.brand.create({
+        data: {
+          clerk_user_id: user.id,
+          company_name: user.fullName || "My Company",
+          email: user.emailAddresses[0]?.emailAddress || "",
+          subscription_tier: "FREE",
+        },
+      });
+      console.log("Created brand record for user:", user.id);
+    } catch (error) {
+      console.error("Error creating brand:", error);
+      // If brand creation fails, show error message
+      return (
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-3xl font-bold text-red-600">Setup Error</h1>
+          <p className="mt-4 text-lg text-gray-600">
+            There was an error setting up your account. Please try refreshing
+            the page.
+          </p>
+        </div>
+      );
+    }
+  }
+
+  // Auto-create user record if it doesn't exist
+  if (!existingUserRecord && brand) {
+    try {
+      await prisma.user.create({
+        data: {
+          clerk_user_id: user.id,
+          brand_id: brand.id,
+          email: user.emailAddresses[0]?.emailAddress || "",
+          full_name: user.fullName || "User",
+          role: "ADMIN", // First user is always admin
+        },
+      });
+      console.log("Created user record for user:", user.id);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      // If user creation fails, show error message
+      return (
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-3xl font-bold text-red-600">Setup Error</h1>
+          <p className="mt-4 text-lg text-gray-600">
+            There was an error setting up your account. Please try refreshing
+            the page.
+          </p>
+        </div>
+      );
+    }
+  }
+
+  // After creating records, redirect to settings
+  redirect("/dashboard/settings");
 }
