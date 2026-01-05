@@ -480,6 +480,86 @@ export async function getExpiringCertifications(
   }
 }
 
+/**
+ * Get all certifications for a brand with pagination and filters
+ */
+export async function getAllCertifications(
+  brandId: string,
+  options?: {
+    search?: string;
+    status?: CertificationStatus;
+    skip?: number;
+    take?: number;
+    sortBy?: "certification_name" | "expiry_date" | "created_at";
+    sortOrder?: "asc" | "desc";
+  }
+) {
+  try {
+    const where: any = {
+      supplier: {
+        brand_id: brandId,
+      },
+    };
+
+    if (options?.search) {
+      where.OR = [
+        { certification_name: { contains: options.search, mode: "insensitive" } },
+        { certification_type: { contains: options.search, mode: "insensitive" } },
+        { issuing_body: { contains: options.search, mode: "insensitive" } },
+        { supplier: { name: { contains: options.search, mode: "insensitive" } } },
+      ];
+    }
+
+    if (options?.status) {
+      where.status = options.status;
+    }
+
+    const orderBy: any = {};
+    if (options?.sortBy) {
+      orderBy[options.sortBy] = options.sortOrder || "desc";
+    } else {
+      orderBy.expiry_date = "asc";
+    }
+
+    const [certifications, total] = await Promise.all([
+      prisma.certification.findMany({
+        where,
+        select: {
+          id: true,
+          certification_type: true,
+          certification_name: true,
+          issuing_body: true,
+          issue_date: true,
+          expiry_date: true,
+          document_url: true,
+          status: true,
+          created_at: true,
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+              country: true,
+            },
+          },
+        },
+        orderBy,
+        skip: options?.skip || 0,
+        take: options?.take || 20,
+      }),
+      prisma.certification.count({ where }),
+    ]);
+
+    return {
+      certifications,
+      total,
+      hasMore: (options?.skip || 0) + (options?.take || 20) < total,
+    };
+  } catch (error) {
+    console.error("Error fetching all certifications:", error);
+    throw new Error("Failed to fetch certifications");
+  }
+}
+
 // ============================================================================
 // ALERT FUNCTIONS
 // ============================================================================
