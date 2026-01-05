@@ -1,0 +1,19 @@
+{
+  "sqltools.connections": [
+    {
+      "pgOptions": {
+        "ssl": {
+          "rejectUnauthorized": true
+        }
+      },
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "db.prisma.io",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "SupplyVault Prisma DB",
+      "database": "postgres",
+      "username": "dc54ea404dd4f0ad4ee1210e53ebd613240d6cfaaaeaf2b53c4d6a8f5ac6cc37"
+    }
+  ]
+}
