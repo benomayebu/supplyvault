@@ -90,8 +90,7 @@ export function CertificationsPageClient({
         return "bg-yellow-100 text-yellow-800";
       case "EXPIRED":
         return "bg-red-100 text-red-800";
-      case "PENDING_REVIEW":
-        return "bg-blue-100 text-blue-800";
+      // Note: `PENDING_REVIEW` is not part of the schema's CertificationStatus enum
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -141,6 +140,7 @@ export function CertificationsPageClient({
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-gray-500" />
             <select
+              aria-label="Filter certifications by status"
               value={status || "all"}
               onChange={(e) => handleStatusFilter(e.target.value)}
               className="rounded-lg border border-gray-300 px-4 py-2 focus:border-secondary-teal focus:outline-none focus:ring-2 focus:ring-secondary-teal/20"
@@ -149,7 +149,7 @@ export function CertificationsPageClient({
               <option value="VALID">Valid</option>
               <option value="EXPIRING_SOON">Expiring Soon</option>
               <option value="EXPIRED">Expired</option>
-              <option value="PENDING_REVIEW">Pending Review</option>
+              {/* `PENDING_REVIEW` is not defined in the schema enum; omitted */}
             </select>
           </div>
         </div>

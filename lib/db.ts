@@ -1,5 +1,6 @@
 import {
   PrismaClient,
+  Prisma,
   SupplierType,
   CertificationStatus,
   CertificationType,
@@ -495,7 +496,7 @@ export async function getAllCertifications(
   }
 ) {
   try {
-    const where: any = {
+    const where: Prisma.CertificationWhereInput = {
       supplier: {
         brand_id: brandId,
       },
@@ -503,10 +504,19 @@ export async function getAllCertifications(
 
     if (options?.search) {
       where.OR = [
-        { certification_name: { contains: options.search, mode: "insensitive" } },
-        { certification_type: { contains: options.search, mode: "insensitive" } },
-        { issuing_body: { contains: options.search, mode: "insensitive" } },
-        { supplier: { name: { contains: options.search, mode: "insensitive" } } },
+        {
+          certification_name: { contains: options.search, mode: "insensitive" },
+        },
+        // Note: certification_type is an enum in the schema; we don't perform
+        // a substring search on enums. Searching by certification_name,
+        // issuing_body, and supplier name is sufficient for full-text-like
+        // behavior here.
+        {
+          issuing_body: { contains: options.search, mode: "insensitive" },
+        },
+        {
+          supplier: { name: { contains: options.search, mode: "insensitive" } },
+        },
       ];
     }
 
@@ -514,9 +524,10 @@ export async function getAllCertifications(
       where.status = options.status;
     }
 
-    const orderBy: any = {};
+    const orderBy: Prisma.CertificationOrderByWithRelationInput = {};
     if (options?.sortBy) {
-      orderBy[options.sortBy] = options.sortOrder || "desc";
+      const dir = options.sortOrder || "desc";
+      (orderBy as any)[options.sortBy] = dir;
     } else {
       orderBy.expiry_date = "asc";
     }
