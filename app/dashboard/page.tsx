@@ -10,9 +10,7 @@ import { MetricCard } from "@/components/dashboard/metric-card";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ExpiryTable } from "@/components/dashboard/expiry-table";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
-import { EmptyStateWithAction } from "@/components/ui/empty-state";
-import { Building2 } from "lucide-react";
-import Link from "next/link";
+import { EmptySuppliers } from "@/components/ui/empty-state";
 
 export const revalidate = 300; // Cache for 5 minutes (ISR)
 export const dynamic = "force-dynamic"; // Allow dynamic rendering when needed
@@ -62,22 +60,8 @@ async function DashboardContent() {
 
       {/* Empty State for No Suppliers */}
       {metrics.totalSuppliers === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center shadow-sm">
-          <EmptyStateWithAction
-            icon={Building2}
-            title="No suppliers yet"
-            description="Get started by adding your first supplier to track certifications."
-            actionLabel="Add Your First Supplier"
-            onAction={() => {
-              // This will be handled by the link
-            }}
-          />
-          <Link
-            href="/dashboard/suppliers"
-            className="mt-4 inline-block rounded-lg bg-primary-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-navy/90"
-          >
-            Add Your First Supplier
-          </Link>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <EmptySuppliers />
         </div>
       )}
 
