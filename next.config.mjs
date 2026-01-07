@@ -77,7 +77,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com wss://*.clerk.accounts.dev",
+              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.vercel.app https://*.vercel.com https://vitals.vercel-insights.com wss://*.clerk.com wss://*.clerk.accounts.dev",
               "worker-src 'self' blob:",
               "frame-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
               "object-src 'none'",
