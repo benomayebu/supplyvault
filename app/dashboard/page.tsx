@@ -60,7 +60,7 @@ async function DashboardContent() {
 
       {/* Empty State for No Suppliers */}
       {metrics.totalSuppliers === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
           <EmptySuppliers />
         </div>
       )}
