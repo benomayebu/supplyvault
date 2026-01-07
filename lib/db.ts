@@ -526,8 +526,7 @@ export async function getAllCertifications(
 
     const orderBy: Prisma.CertificationOrderByWithRelationInput = {};
     if (options?.sortBy) {
-      const dir = options.sortOrder || "desc";
-      (orderBy as any)[options.sortBy] = dir;
+      orderBy[options.sortBy] = options.sortOrder || "desc";
     } else {
       orderBy.expiry_date = "asc";
     }
