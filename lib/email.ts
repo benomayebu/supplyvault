@@ -59,7 +59,7 @@ export async function sendExpiryAlertEmail({
 
     const resend = getResend();
     const result = await resend.emails.send({
-      from: "SupplyVault <notifications@supplyvault.com>",
+      from: "SupplyVault <onboarding@resend.dev>", // Resend's free testing domain
       to: [to],
       subject,
       html: emailHtml,
