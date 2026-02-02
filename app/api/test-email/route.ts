@@ -15,7 +15,10 @@ export async function GET(request: Request) {
 
     if (!toEmail) {
       return NextResponse.json(
-        { error: "Missing 'to' query parameter. Usage: /api/test-email?to=your-email@example.com" },
+        {
+          error:
+            "Missing 'to' query parameter. Usage: /api/test-email?to=your-email@example.com",
+        },
         { status: 400 }
       );
     }
