@@ -1,5 +1,9 @@
 import { prisma } from "./db";
-import { SupplierType, CertificationStatus } from "@prisma/client";
+import {
+  SupplierType,
+  CertificationStatus,
+  VerificationStatus,
+} from "@prisma/client";
 
 export interface SupplierWithCertCount {
   id: string;
@@ -9,6 +13,7 @@ export interface SupplierWithCertCount {
   contact_email: string | null;
   contact_phone: string | null;
   address: string | null;
+  verification_status: VerificationStatus;
   created_at: Date;
   updated_at: Date;
   certCount: number;
@@ -74,6 +79,7 @@ export async function getSuppliersWithStats(
         contact_email: true,
         contact_phone: true,
         address: true,
+        verification_status: true,
         created_at: true,
         updated_at: true,
         certifications: {
@@ -125,6 +131,7 @@ export async function getSuppliersWithStats(
           contact_email: supplier.contact_email,
           contact_phone: supplier.contact_phone,
           address: supplier.address,
+          verification_status: supplier.verification_status,
           created_at: supplier.created_at,
           updated_at: supplier.updated_at,
           certCount,
