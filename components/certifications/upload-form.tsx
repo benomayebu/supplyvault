@@ -114,40 +114,6 @@ export function UploadForm({ supplierId, onSuccess }: UploadFormProps) {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const uploadFileToS3 = async (file: File): Promise<string> => {
-    // Get pre-signed URL
-    const urlResponse = await fetch("/api/upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-      }),
-    });
-
-    if (!urlResponse.ok) {
-      throw new Error("Failed to get upload URL");
-    }
-
-    const { signedUrl, url: s3Url } = await urlResponse.json();
-
-    // Upload file to S3
-    const uploadResponse = await fetch(signedUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
-      body: file,
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error("Failed to upload file");
-    }
-
-    return s3Url;
-  };
-
   const handleSubmit = async () => {
     if (!validateStep(3)) return;
 
@@ -162,34 +128,39 @@ export function UploadForm({ supplierId, onSuccess }: UploadFormProps) {
 
       const validated = formSchema.parse(completeData);
 
-      // Upload file to S3
-      let documentUrl = "";
-      if (selectedFile) {
-        setUploadProgress(30);
-        documentUrl = await uploadFileToS3(selectedFile);
-        setUploadProgress(60);
+      if (!selectedFile) {
+        throw new Error("No file selected");
       }
 
-      // Create certification record
-      const response = await fetch("/api/certifications", {
+      setUploadProgress(20);
+
+      // Create form data for upload
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", selectedFile);
+      uploadFormData.append("supplierId", supplierId);
+      uploadFormData.append("certificationType", validated.certification_type);
+      uploadFormData.append(
+        "certificationName",
+        validated.certification_name
+      );
+      uploadFormData.append("certificateNumber", ""); // Can be added to form if needed
+      uploadFormData.append("issuingBody", validated.issuing_body || "");
+      uploadFormData.append("issueDate", validated.issue_date);
+      uploadFormData.append("expiryDate", validated.expiry_date);
+
+      setUploadProgress(50);
+
+      // Upload file and create certification in one API call
+      const response = await fetch("/api/certifications/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          supplier_id: supplierId,
-          certification_type: validated.certification_type,
-          certification_name: validated.certification_name,
-          issuing_body: validated.issuing_body || "",
-          issue_date: validated.issue_date,
-          expiry_date: validated.expiry_date,
-          document_url: documentUrl,
-        }),
+        body: uploadFormData,
       });
 
       setUploadProgress(90);
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create certification");
+        throw new Error(error.error || "Failed to upload certification");
       }
 
       setUploadProgress(100);
