@@ -23,9 +23,15 @@ import {
   SupplierType,
   CertificationStatus,
   CertificationType,
+  VerificationStatus as PrismaVerificationStatus,
 } from "@prisma/client";
 import { format } from "date-fns";
 import { clsx } from "clsx";
+import {
+  VerificationBadge,
+  VerificationStatus,
+} from "./verification-badge";
+import { VerificationActions } from "./verification-actions";
 
 interface SupplierDetailClientProps {
   supplier: {
@@ -36,6 +42,7 @@ interface SupplierDetailClientProps {
     contact_email: string | null;
     contact_phone: string | null;
     address: string | null;
+    verification_status: PrismaVerificationStatus;
     created_at: Date;
   };
   certifications: Array<{
@@ -165,15 +172,25 @@ export function SupplierDetailClient({
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-primary-navy">
-              {supplier.name}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-primary-navy">
+                {supplier.name}
+              </h1>
+              <VerificationBadge
+                status={supplier.verification_status as VerificationStatus}
+                size="lg"
+              />
+            </div>
             <p className="mt-1 text-gray-600">
               Supplier Details & Certifications
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <VerificationActions
+            supplierId={supplier.id}
+            currentStatus={supplier.verification_status as VerificationStatus}
+          />
           <button
             onClick={handleExportReport}
             disabled={isExporting}
