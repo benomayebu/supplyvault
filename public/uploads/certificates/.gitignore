@@ -1,0 +1,5 @@
+# Ignore all uploaded certificate files
+*
+# But keep this directory in git
+!.gitignore
+!.gitkeep
