@@ -46,6 +46,7 @@ export default async function SupplierPage({ params }: SupplierPageProps) {
         contact_email: supplier.contact_email,
         contact_phone: supplier.contact_phone,
         address: supplier.address,
+        verification_status: supplier.verification_status,
         created_at: supplier.created_at,
       }}
       certifications={certifications}

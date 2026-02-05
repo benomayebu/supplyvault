@@ -5,6 +5,10 @@ import { Eye, Edit, Trash2 } from "lucide-react";
 import { SupplierType } from "@prisma/client";
 import { SupplierWithCertCount } from "@/lib/suppliers";
 import { clsx } from "clsx";
+import {
+  VerificationBadge,
+  VerificationStatus,
+} from "./verification-badge";
 
 interface SupplierRowProps {
   supplier: SupplierWithCertCount;
@@ -86,12 +90,21 @@ export function SupplierRow({
         />
       </td>
       <td className="whitespace-nowrap px-6 py-4">
-        <Link
-          href={`/dashboard/suppliers/${supplier.id}`}
-          className="font-medium text-primary-navy hover:text-secondary-teal"
-        >
-          {supplier.name}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/suppliers/${supplier.id}`}
+            className="font-medium text-primary-navy hover:text-secondary-teal"
+          >
+            {supplier.name}
+          </Link>
+          {supplier.verification_status && (
+            <VerificationBadge
+              status={supplier.verification_status as VerificationStatus}
+              size="sm"
+              showLabel={false}
+            />
+          )}
+        </div>
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
         <span className="mr-2">{getCountryFlag(supplier.country)}</span>
