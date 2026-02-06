@@ -6,9 +6,12 @@ import { CertificationType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 300; // 5 minutes
+export const maxDuration = 300; // 300 seconds (5 minutes)
 
 const CRON_SECRET = process.env.CRON_SECRET;
+
+// Special value to indicate a revoked/invalid certificate in alert emails
+const REVOKED_CERTIFICATE_INDICATOR = -1;
 
 /**
  * GET /api/cron/re-verify
@@ -95,7 +98,7 @@ export async function GET(req: NextRequest) {
               certificationName: cert.certification_name,
               certificationType: cert.certification_type,
               expiryDate: cert.expiry_date,
-              daysUntilExpiry: -1, // Special value to indicate revoked
+              daysUntilExpiry: REVOKED_CERTIFICATE_INDICATOR,
               certificationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/certifications/${cert.id}`,
             });
           } catch (emailError) {

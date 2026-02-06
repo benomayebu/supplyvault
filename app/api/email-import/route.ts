@@ -10,7 +10,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { calculateFileHash, extractText, extractCertificateData } from '@/lib/extraction';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes for long-running imports
+export const maxDuration = 300; // 300 seconds (5 minutes) for long-running imports
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',

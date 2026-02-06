@@ -28,6 +28,13 @@ interface Certification {
   created_at: string;
 }
 
+/**
+ * Helper to check if extraction confidence value is valid
+ */
+function hasValidConfidence(confidence?: number): confidence is number {
+  return confidence !== null && confidence !== undefined;
+}
+
 export default function ReviewQueueClient() {
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,7 +134,7 @@ export default function ReviewQueueClient() {
                   <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
                     {cert.certification_type}
                   </span>
-                  {cert.extraction_confidence !== null && cert.extraction_confidence !== undefined && (
+                  {hasValidConfidence(cert.extraction_confidence) && (
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
                       {Math.round(cert.extraction_confidence * 100)}% confidence
                     </span>

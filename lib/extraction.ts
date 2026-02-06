@@ -1,4 +1,4 @@
-// @ts-ignore - pdf-parse has issues with TypeScript imports
+// @ts-expect-error - pdf-parse has ESM/CommonJS compatibility issues with TypeScript
 import pdfParse from 'pdf-parse';
 import { createWorker } from 'tesseract.js';
 import crypto from 'crypto';
