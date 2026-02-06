@@ -61,7 +61,7 @@ export default function VerificationBadge({
   return (
     <div className="inline-flex items-center gap-2">
       <span
-        className={\`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border \${getStatusColor()}\`}
+        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor()}`}
       >
         <span>{getStatusIcon()}</span>
         <span>{status}</span>

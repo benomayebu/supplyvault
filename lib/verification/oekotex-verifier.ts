@@ -43,7 +43,7 @@ export class OekoTexVerifier implements CertificationVerifier {
         confidence: 0,
         verified: false,
         details: {
-          notes: \`OEKO-TEX verification service unavailable: \${error instanceof Error ? error.message : 'Unknown error'}. Manual verification required.\`,
+          notes: `OEKO-TEX verification service unavailable: ${error instanceof Error ? error.message : 'Unknown error'}. Manual verification required.`,
         },
       };
     }

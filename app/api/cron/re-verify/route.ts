@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     // Verify cron secret if provided
     const authHeader = req.headers.get('authorization');
-    if (CRON_SECRET && authHeader !== \`Bearer \${CRON_SECRET}\`) {
+    if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -96,12 +96,12 @@ export async function GET(req: NextRequest) {
               certificationType: cert.certification_type,
               expiryDate: cert.expiry_date,
               daysUntilExpiry: -1, // Special value to indicate revoked
-              certificationUrl: \`\${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/certifications/\${cert.id}\`,
+              certificationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/certifications/${cert.id}`,
             });
           } catch (emailError) {
             console.error('Error sending revocation email:', emailError);
             results.errors.push(
-              \`Failed to send revocation email for cert \${cert.id}\`
+              `Failed to send revocation email for cert ${cert.id}`
             );
           }
         } else {
@@ -110,9 +110,9 @@ export async function GET(req: NextRequest) {
 
         results.processed++;
       } catch (error) {
-        console.error(\`Error re-verifying certification \${cert.id}:\`, error);
+        console.error(`Error re-verifying certification ${cert.id}:`, error);
         results.errors.push(
-          \`Failed to re-verify cert \${cert.id}: \${error instanceof Error ? error.message : 'Unknown error'}\`
+          `Failed to re-verify cert ${cert.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
         results.failed++;
       }

@@ -36,6 +36,9 @@ export async function getCurrentBrand() {
         email: true,
         country: true,
         subscription_tier: true,
+        gmail_refresh_token: true,
+        gmail_token_expiry: true,
+        gmail_connected_at: true,
       },
     });
 

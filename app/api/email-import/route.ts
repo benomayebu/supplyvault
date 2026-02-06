@@ -110,12 +110,12 @@ export async function POST(req: NextRequest) {
               });
 
               if (duplicate) {
-                console.log(\`Skipping duplicate certificate: \${attachment.filename}\`);
+                console.log(`Skipping duplicate certificate: ${attachment.filename}`);
                 continue;
               }
 
               // Upload to S3
-              const s3Key = \`certifications/\${brand.id}/\${Date.now()}-\${attachment.filename}\`;
+              const s3Key = `certifications/${brand.id}/${Date.now()}-${attachment.filename}`;
               await s3Client.send(
                 new PutObjectCommand({
                   Bucket: process.env.AWS_S3_BUCKET || '',
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
                 })
               );
 
-              const documentUrl = \`https://\${process.env.AWS_S3_BUCKET}.s3.\${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/\${s3Key}\`;
+              const documentUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${s3Key}`;
 
               // Extract text and certificate data
               let extractedData = null;
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
             } catch (attachError) {
               console.error('Error processing attachment:', attachError);
               results.errors.push(
-                \`Failed to process \${attachment.filename}: \${attachError instanceof Error ? attachError.message : 'Unknown error'}\`
+                `Failed to process ${attachment.filename}: ${attachError instanceof Error ? attachError.message : 'Unknown error'}`
               );
               results.failed++;
             }
@@ -228,7 +228,7 @@ export async function POST(req: NextRequest) {
         } catch (msgError) {
           console.error('Error processing message:', msgError);
           results.errors.push(
-            \`Failed to process email: \${msgError instanceof Error ? msgError.message : 'Unknown error'}\`
+            `Failed to process email: ${msgError instanceof Error ? msgError.message : 'Unknown error'}`
           );
           results.failed++;
           results.processed++;

@@ -1,4 +1,5 @@
-import pdf from 'pdf-parse';
+// @ts-ignore - pdf-parse has issues with TypeScript imports
+import pdfParse from 'pdf-parse';
 import { createWorker } from 'tesseract.js';
 import crypto from 'crypto';
 
@@ -7,7 +8,7 @@ import crypto from 'crypto';
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdf(buffer);
+    const data = await pdfParse(buffer);
     return data.text;
   } catch (error) {
     console.error('Error extracting text from PDF:', error);

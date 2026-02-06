@@ -49,7 +49,7 @@ export class GOTSVerifier implements CertificationVerifier {
         confidence: 0,
         verified: false,
         details: {
-          notes: \`GOTS verification service unavailable: \${error instanceof Error ? error.message : 'Unknown error'}. Manual verification required.\`,
+          notes: `GOTS verification service unavailable: ${error instanceof Error ? error.message : 'Unknown error'}. Manual verification required.`,
         },
       };
     }

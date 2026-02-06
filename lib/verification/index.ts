@@ -85,14 +85,14 @@ export class VerificationRouter {
     try {
       return await verifier.verify(data);
     } catch (error) {
-      console.error(\`Verification failed for \${type}:\`, error);
+      console.error(`Verification failed for ${type}:`, error);
       return {
         status: 'FAILED',
         method: 'MANUAL',
         confidence: 0,
         verified: false,
         details: {
-          notes: \`Verification error: \${error instanceof Error ? error.message : 'Unknown error'}\`,
+          notes: `Verification error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         },
       };
     }

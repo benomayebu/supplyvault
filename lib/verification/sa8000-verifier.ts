@@ -116,7 +116,7 @@ export class SA8000Verifier implements CertificationVerifier {
             verified: false,
             details: {
               certificateNumber: facility.certificateNumber,
-              notes: \`Certificate number found but company name mismatch. Expected: \${facility.companyName}, Got: \${data.companyName}\`,
+              notes: `Certificate number found but company name mismatch. Expected: ${facility.companyName}, Got: ${data.companyName}`,
             },
           };
         }
