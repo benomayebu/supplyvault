@@ -73,9 +73,10 @@ model Brand {
   updated_at        DateTime         @updatedAt
 
   // Relations
-  suppliers Supplier[]
-  users     User[]
-  alerts    Alert[]
+  suppliers     Supplier[]
+  users         User[]
+  alerts        Alert[]
+  gmailAccounts GmailAccount[]
 
   @@index([clerk_user_id])
   @@index([email])
