@@ -171,3 +171,25 @@ model Alert {
   @@index([alert_type])
   @@map("alerts")
 }
+
+// Gmail / OAuth accounts for brands
+model GmailAccount {
+  id            String   @id @default(cuid())
+  brand_id      String
+  provider      String   @default("GMAIL")
+  email         String
+  access_token  String   // encrypted
+  refresh_token String?  // encrypted
+  scope         String?
+  token_type    String?
+  expires_at    DateTime?
+  last_polled_at DateTime?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  Brand Brand @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+
+  @@index([brand_id])
+  @@index([email])
+  @@map("gmail_accounts")
+}
