@@ -4,6 +4,7 @@ A comprehensive supplier compliance management platform built with Next.js, desi
 
 ## Features
 
+### Core Features
 - 🔐 Secure authentication with Clerk
 - 📊 Supplier management and tracking
 - 📜 Certification document storage and expiry tracking
@@ -11,6 +12,20 @@ A comprehensive supplier compliance management platform built with Next.js, desi
 - 👥 Team collaboration with role-based access control
 - 📈 Compliance reporting and analytics
 - 🌍 Multi-country supplier support
+
+### New MVP Features (Phase 1-5)
+- 📧 **Gmail OAuth Integration**: Connect Gmail to automatically import certificate attachments
+- 🤖 **Automated Email Ingestion**: Fetch and process certificate emails from suppliers
+- 📄 **OCR & Text Extraction**: Extract text from PDFs and images using pdf-parse and Tesseract.js
+- 🧠 **NLP Data Extraction**: Automatically extract certificate numbers, dates, and issuing bodies
+- 🔍 **Hash-based Deduplication**: Prevent duplicate certificate imports
+- ✅ **Automated Verification Engine**: 
+  - SA8000: List matching with intelligent string similarity
+  - GOTS: Placeholder for API/web scraping integration
+  - OEKO-TEX: Placeholder for web scraping integration
+- 🔄 **Monthly Re-verification**: Automatically re-verify certificates to detect revocations
+- 👨‍⚖️ **Manual Review Queue**: Review and approve/reject certificates with low confidence scores
+- 📊 **Verification Status Tracking**: Track verification method, confidence, and details
 
 ## Quick Start
 
