@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
     const supplier = await prisma.supplier.findUnique({
       where: {
         id: supplier_id,
-        clerk_user_id: { not: null }, // Only independent suppliers
       },
     });
 
-    if (!supplier) {
+    // Only allow connections to independent suppliers (with clerk_user_id)
+    if (!supplier || !supplier.clerk_user_id) {
       return NextResponse.json(
         { error: "Supplier not found or not available for connection" },
         { status: 404 }

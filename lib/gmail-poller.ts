@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 // NOTE: This module is a lightweight Gmail poller. It expects an access token (and optionally refresh token)
 // to be supplied by the caller. Token storage / rotation and account listing should be implemented
 // in your application DB and secrets storage (KMS). This file focuses on the Gmail REST calls and
@@ -120,11 +118,13 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
         // use absolute URL in server env when running from a server worker
         const uploadUrl = cfg.uploadWebhookUrl!.startsWith("/") ? `${process.env.NEXT_PUBLIC_APP_URL || (process.env.APP_URL || "http://localhost:3000")}${cfg.uploadWebhookUrl}` : cfg.uploadWebhookUrl;
 
-        await fetch(uploadUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        if (uploadUrl) {
+          await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        }
       }
     } catch (err) {
       console.error("Error processing message", m.id, err);
