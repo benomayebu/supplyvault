@@ -25,8 +25,6 @@ export default async function SupplierViewPage({
   const supplier = await prisma.supplier.findUnique({
     where: {
       id: params.id,
-      // Only show independent suppliers (with clerk_user_id)
-      clerk_user_id: { not: null },
     },
     include: {
       certifications: {
@@ -34,6 +32,11 @@ export default async function SupplierViewPage({
       },
     },
   });
+
+  // Only show independent suppliers (with clerk_user_id)
+  if (supplier && !supplier.clerk_user_id) {
+    notFound();
+  }
 
   if (!supplier) {
     notFound();

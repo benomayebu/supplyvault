@@ -33,8 +33,6 @@ export async function POST(request: NextRequest) {
         issuing_body,
         issue_date,
         expiry_date,
-        certificate_number,
-        scope,
       } = body;
 
       // Validate required fields
@@ -76,8 +74,7 @@ export async function POST(request: NextRequest) {
           issuing_body,
           issue_date: new Date(issue_date),
           expiry_date: new Date(expiry_date),
-          certificate_number: certificate_number || null,
-          scope: scope || null,
+          document_url: "", // Empty for now, will be updated with file upload
           status,
         },
       });

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         let tokens = { access_token: acct.access_token, refresh_token: acct.refresh_token } as any;
 
         // If refresh token present and access likely expired, refresh (you should check expiry in DB)
-        if (acct.refresh_token && !acct.access_token) {
+        if (acct.refresh_token && !acct.access_token && acct.client_id && acct.client_secret) {
           const refreshed = await refreshAccessToken(acct.refresh_token, acct.client_id, acct.client_secret);
           tokens = { ...tokens, ...refreshed };
           await persistRefreshedTokens(acct.id, refreshed);
