@@ -3,14 +3,102 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import { prisma } from "@/lib/db";
 import { CertificationType } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentSupplier } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get current supplier
+    const supplier = await getCurrentSupplier();
+    if (!supplier) {
+      return NextResponse.json(
+        { error: "Supplier profile not found" },
+        { status: 404 }
+      );
+    }
+
+    const contentType = request.headers.get("content-type");
+
+    // Handle JSON requests (without file upload)
+    if (contentType?.includes("application/json")) {
+      const body = await request.json();
+      const {
+        certification_type,
+        certification_name,
+        issuing_body,
+        issue_date,
+        expiry_date,
+        certificate_number,
+        scope,
+      } = body;
+
+      // Validate required fields
+      if (
+        !certification_type ||
+        !certification_name ||
+        !issuing_body ||
+        !issue_date ||
+        !expiry_date
+      ) {
+        return NextResponse.json(
+          { error: "Missing required fields" },
+          { status: 400 }
+        );
+      }
+
+      // Calculate certification status based on expiry date
+      const expiryDateTime = new Date(expiry_date);
+      const now = new Date();
+      const daysUntilExpiry = Math.floor(
+        (expiryDateTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      let status: "VALID" | "EXPIRING_SOON" | "EXPIRED";
+      if (daysUntilExpiry < 0) {
+        status = "EXPIRED";
+      } else if (daysUntilExpiry <= 90) {
+        status = "EXPIRING_SOON";
+      } else {
+        status = "VALID";
+      }
+
+      // Create certification record
+      const certification = await prisma.certification.create({
+        data: {
+          supplier_id: supplier.id,
+          certification_type: certification_type as CertificationType,
+          certification_name,
+          issuing_body,
+          issue_date: new Date(issue_date),
+          expiry_date: new Date(expiry_date),
+          certificate_number: certificate_number || null,
+          scope: scope || null,
+          status,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        certification: {
+          id: certification.id,
+          certification_type: certification.certification_type,
+          certification_name: certification.certification_name,
+          status: certification.status,
+          expiry_date: certification.expiry_date,
+        },
+      });
+    }
+
+    // Handle FormData requests (with file upload)
     const formData = await request.formData();
 
     // Extract form fields
     const file = formData.get("file") as File;
-    const supplierId = formData.get("supplierId") as string;
     const certificationType = formData.get(
       "certificationType"
     ) as CertificationType;
@@ -23,7 +111,6 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (
       !file ||
-      !supplierId ||
       !certificationType ||
       !certificationName ||
       !certificateNumber ||
@@ -34,18 +121,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
-      );
-    }
-
-    // Validate supplier exists
-    const supplier = await prisma.supplier.findUnique({
-      where: { id: supplierId },
-    });
-
-    if (!supplier) {
-      return NextResponse.json(
-        { error: "Supplier not found" },
-        { status: 404 }
       );
     }
 
@@ -69,7 +144,7 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const timestamp = Date.now();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const filename = `${supplierId}_${timestamp}_${sanitizedFilename}`;
+    const filename = `${supplier.id}_${timestamp}_${sanitizedFilename}`;
 
     // Save file to public/uploads directory
     const bytes = await file.arrayBuffer();
@@ -105,7 +180,7 @@ export async function POST(request: NextRequest) {
     // Create certification record in database
     const certification = await prisma.certification.create({
       data: {
-        supplier_id: supplierId,
+        supplier_id: supplier.id,
         certification_type: certificationType,
         certification_name: certificationName,
         issuing_body: issuingBody,

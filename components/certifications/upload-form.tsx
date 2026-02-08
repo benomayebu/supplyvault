@@ -139,10 +139,7 @@ export function UploadForm({ supplierId, onSuccess }: UploadFormProps) {
       uploadFormData.append("file", selectedFile);
       uploadFormData.append("supplierId", supplierId);
       uploadFormData.append("certificationType", validated.certification_type);
-      uploadFormData.append(
-        "certificationName",
-        validated.certification_name
-      );
+      uploadFormData.append("certificationName", validated.certification_name);
       uploadFormData.append("certificateNumber", ""); // Can be added to form if needed
       uploadFormData.append("issuingBody", validated.issuing_body || "");
       uploadFormData.append("issueDate", validated.issue_date);
