@@ -5,10 +5,7 @@ import { Eye, Edit, Trash2 } from "lucide-react";
 import { SupplierType } from "@prisma/client";
 import { SupplierWithCertCount } from "@/lib/suppliers";
 import { clsx } from "clsx";
-import {
-  VerificationBadge,
-  VerificationStatus,
-} from "./verification-badge";
+import { VerificationBadge, VerificationStatus } from "./verification-badge";
 
 interface SupplierRowProps {
   supplier: SupplierWithCertCount;

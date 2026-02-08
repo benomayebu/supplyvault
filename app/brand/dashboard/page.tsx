@@ -75,9 +75,12 @@ export default async function BrandDashboard() {
               Quick Actions
             </h2>
             <div className="space-y-2">
-              <button className="w-full rounded bg-[#3BCEAC] px-4 py-2 text-sm font-medium text-white hover:bg-[#3BCEAC]/90">
-                Find Suppliers
-              </button>
+              <a
+                href="/brand/suppliers/discover"
+                className="block w-full rounded bg-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#3BCEAC]/90"
+              >
+                Discover Suppliers
+              </a>
               <button className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 Add Supplier
               </button>
