@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { showErrorToast } from "@/lib/toast";
 
 const CERTIFICATION_TYPES = [
   "GOTS (Global Organic Textile Standard)",
@@ -55,14 +56,19 @@ export default function BrandProfileSetup() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create brand profile");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create brand profile");
       }
 
       // Redirect to brand dashboard
       router.push("/brand/dashboard");
     } catch (error) {
       console.error("Error creating brand profile:", error);
-      alert("Failed to create profile. Please try again.");
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to create profile. Please try again."
+      );
       setIsLoading(false);
     }
   };

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         clerk_user_id: userId,
         brand_id: brand.id,
         email,
-        full_name: user.fullName || "User",
+        full_name: user.fullName || email.split("@")[0],
         role: "ADMIN",
       },
     });

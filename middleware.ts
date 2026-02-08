@@ -37,7 +37,9 @@ export default clerkMiddleware(async (auth, req) => {
   // Role-based route protection
   if (userId && !isOnboardingRoute(req) && !isPublicRoute(req)) {
     const { sessionClaims } = await auth();
-    const metadata = sessionClaims?.unsafeMetadata as { stakeholderRole?: string } | undefined;
+    const metadata = sessionClaims?.unsafeMetadata as
+      | { stakeholderRole?: string }
+      | undefined;
     const role = metadata?.stakeholderRole;
 
     // If user has a role, enforce route restrictions
@@ -45,13 +47,13 @@ export default clerkMiddleware(async (auth, req) => {
       if (role === "SUPPLIER" && isBrandRoute(req)) {
         return NextResponse.redirect(new URL("/supplier/dashboard", req.url));
       }
-      
+
       if (role === "BRAND" && isSupplierRoute(req)) {
         return NextResponse.redirect(new URL("/brand/dashboard", req.url));
       }
 
       // Redirect /dashboard to role-specific dashboard
-      if (req.nextUrl.pathname === "/dashboard" || req.nextUrl.pathname.startsWith("/dashboard")) {
+      if (req.nextUrl.pathname.startsWith("/dashboard")) {
         if (role === "SUPPLIER") {
           return NextResponse.redirect(new URL("/supplier/dashboard", req.url));
         } else if (role === "BRAND") {
@@ -75,4 +77,3 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
-

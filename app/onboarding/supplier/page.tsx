@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { showErrorToast } from "@/lib/toast";
 
 const SUPPLIER_TYPES = [
   { value: "FABRIC_MILL", label: "Fabric Mill" },
@@ -61,14 +62,19 @@ export default function SupplierProfileSetup() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create supplier profile");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create supplier profile");
       }
 
       // Redirect to supplier dashboard
       router.push("/supplier/dashboard");
     } catch (error) {
       console.error("Error creating supplier profile:", error);
-      alert("Failed to create profile. Please try again.");
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to create profile. Please try again."
+      );
       setIsLoading(false);
     }
   };
