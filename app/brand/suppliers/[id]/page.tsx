@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getStakeholderRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import SupplierDetailView from "@/components/suppliers/supplier-detail-view";
+import SupplierDetailViewWithConnection from "@/components/suppliers/supplier-detail-view-with-connection";
 
 export default async function SupplierViewPage({
   params,
@@ -39,5 +39,5 @@ export default async function SupplierViewPage({
     notFound();
   }
 
-  return <SupplierDetailView supplier={supplier} />;
+  return <SupplierDetailViewWithConnection supplier={supplier} />;
 }

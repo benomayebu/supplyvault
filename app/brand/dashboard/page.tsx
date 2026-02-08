@@ -76,14 +76,17 @@ export default async function BrandDashboard() {
             </h2>
             <div className="space-y-2">
               <a
-                href="/brand/suppliers/discover"
+                href="/brand/suppliers/my-suppliers"
                 className="block w-full rounded bg-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#3BCEAC]/90"
+              >
+                My Suppliers
+              </a>
+              <a
+                href="/brand/suppliers/discover"
+                className="block w-full rounded border border-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-[#3BCEAC] hover:bg-[#3BCEAC]/5"
               >
                 Discover Suppliers
               </a>
-              <button className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Add Supplier
-              </button>
             </div>
           </div>
         </div>

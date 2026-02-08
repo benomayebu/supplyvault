@@ -66,6 +66,11 @@ enum VerificationStatus {
   VERIFIED
 }
 
+enum ConnectionStatus {
+  CONNECTED
+  DISCONNECTED
+}
+
 // Models
 model Brand {
   id                String           @id @default(cuid())
@@ -85,6 +90,7 @@ model Brand {
   users         User[]
   alerts        Alert[]
   gmailAccounts GmailAccount[]
+  connections   SupplierConnection[]  // Connections to suppliers
 
   @@index([clerk_user_id])
   @@index([email])
@@ -129,6 +135,7 @@ model Supplier {
   // Relations
   brand          Brand?          @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   certifications Certification[]
+  connections    SupplierConnection[]  // Connections from brands
 
   @@index([clerk_user_id])
   @@index([brand_id])
@@ -204,4 +211,25 @@ model GmailAccount {
   @@index([brand_id])
   @@index([email])
   @@map("gmail_accounts")
+}
+
+// Supplier connections for brands
+model SupplierConnection {
+  id          String           @id @default(cuid())
+  brand_id    String
+  supplier_id String
+  status      ConnectionStatus @default(CONNECTED)
+  notes       String?
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  // Relations
+  brand    Brand    @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplier_id], references: [id], onDelete: Cascade)
+
+  @@unique([brand_id, supplier_id])
+  @@index([brand_id])
+  @@index([supplier_id])
+  @@index([status])
+  @@map("supplier_connections")
 }
