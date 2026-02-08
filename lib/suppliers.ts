@@ -9,7 +9,7 @@ export interface SupplierWithCertCount {
   id: string;
   name: string;
   country: string;
-  supplier_type: SupplierType;
+  supplier_type: SupplierType | null;
   contact_email: string | null;
   contact_phone: string | null;
   address: string | null;

@@ -32,9 +32,8 @@ export function CertificateUploadForm({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Form fields
-  const [certificationType, setCertificationType] = useState<CertificationType>(
-    "GOTS"
-  );
+  const [certificationType, setCertificationType] =
+    useState<CertificationType>("GOTS");
   const [certificationName, setCertificationName] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
   const [issuingBody, setIssuingBody] = useState("");

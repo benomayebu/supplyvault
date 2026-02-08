@@ -5,10 +5,7 @@ import { Eye, Edit, Trash2 } from "lucide-react";
 import { SupplierType } from "@prisma/client";
 import { SupplierWithCertCount } from "@/lib/suppliers";
 import { clsx } from "clsx";
-import {
-  VerificationBadge,
-  VerificationStatus,
-} from "./verification-badge";
+import { VerificationBadge, VerificationStatus } from "./verification-badge";
 
 interface SupplierRowProps {
   supplier: SupplierWithCertCount;
@@ -114,10 +111,10 @@ export function SupplierRow({
         <span
           className={clsx(
             "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
-            supplierTypeColors[supplier.supplier_type]
+            supplierTypeColors[supplier.supplier_type || "OTHER"]
           )}
         >
-          {supplierTypeLabels[supplier.supplier_type]}
+          {supplierTypeLabels[supplier.supplier_type || "OTHER"]}
         </span>
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">

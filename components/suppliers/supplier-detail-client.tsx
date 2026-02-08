@@ -27,10 +27,7 @@ import {
 } from "@prisma/client";
 import { format } from "date-fns";
 import { clsx } from "clsx";
-import {
-  VerificationBadge,
-  VerificationStatus,
-} from "./verification-badge";
+import { VerificationBadge, VerificationStatus } from "./verification-badge";
 import { VerificationActions } from "./verification-actions";
 
 interface SupplierDetailClientProps {

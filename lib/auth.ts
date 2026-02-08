@@ -16,6 +16,49 @@ export async function getCurrentUser() {
 }
 
 /**
+ * Get the stakeholder role from Clerk metadata
+ */
+export async function getStakeholderRole(): Promise<"SUPPLIER" | "BRAND" | null> {
+  try {
+    const { sessionClaims } = await auth();
+    const metadata = sessionClaims?.unsafeMetadata as { stakeholderRole?: string } | undefined;
+    const role = metadata?.stakeholderRole;
+    
+    if (role === "SUPPLIER" || role === "BRAND") {
+      return role;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error getting stakeholder role:", error);
+    return null;
+  }
+}
+
+/**
+ * Get the supplier associated with the current user
+ */
+export async function getCurrentSupplier() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return null;
+    }
+
+    const supplier = await prisma.supplier.findUnique({
+      where: {
+        clerk_user_id: user.id,
+      },
+    });
+
+    return supplier;
+  } catch (error) {
+    console.error("Error getting current supplier:", error);
+    return null;
+  }
+}
+
+/**
  * Get the brand associated with the current user
  */
 export async function getCurrentBrand() {
