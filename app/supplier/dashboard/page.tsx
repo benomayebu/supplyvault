@@ -37,7 +37,9 @@ export default async function SupplierDashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Profile Card */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Profile</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Profile
+            </h2>
             <div className="space-y-2 text-sm">
               <div>
                 <span className="font-medium text-gray-600">Country:</span>{" "}
@@ -46,7 +48,9 @@ export default async function SupplierDashboard() {
               {supplier.supplier_type && (
                 <div>
                   <span className="font-medium text-gray-600">Type:</span>{" "}
-                  <span className="text-gray-800">{supplier.supplier_type}</span>
+                  <span className="text-gray-800">
+                    {supplier.supplier_type}
+                  </span>
                 </div>
               )}
               <div>
@@ -60,18 +64,24 @@ export default async function SupplierDashboard() {
 
           {/* Certifications Card */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Certifications</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Certifications
+            </h2>
             <div className="text-center">
               <div className="text-4xl font-bold text-[#3BCEAC]">
                 {supplier.certifications.length}
               </div>
-              <div className="mt-1 text-sm text-gray-600">Total Certifications</div>
+              <div className="mt-1 text-sm text-gray-600">
+                Total Certifications
+              </div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Quick Actions</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Quick Actions
+            </h2>
             <div className="space-y-2">
               <button className="w-full rounded bg-[#3BCEAC] px-4 py-2 text-sm font-medium text-white hover:bg-[#3BCEAC]/90">
                 Upload Certification
@@ -86,7 +96,9 @@ export default async function SupplierDashboard() {
         {/* Recent Certifications */}
         {supplier.certifications.length > 0 && (
           <div className="mt-8 rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Recent Certifications</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Recent Certifications
+            </h2>
             <div className="space-y-2">
               {supplier.certifications.map((cert) => (
                 <div
@@ -94,8 +106,12 @@ export default async function SupplierDashboard() {
                   className="flex items-center justify-between border-b border-gray-100 py-2"
                 >
                   <div>
-                    <div className="font-medium text-gray-800">{cert.certification_name}</div>
-                    <div className="text-sm text-gray-600">{cert.certification_type}</div>
+                    <div className="font-medium text-gray-800">
+                      {cert.certification_name}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {cert.certification_type}
+                    </div>
                   </div>
                   <div className="text-sm text-gray-600">
                     Expires: {new Date(cert.expiry_date).toLocaleDateString()}

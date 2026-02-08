@@ -43,7 +43,9 @@ export default async function BrandDashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Suppliers Card */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Suppliers</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Suppliers
+            </h2>
             <div className="text-center">
               <div className="text-4xl font-bold text-[#3BCEAC]">
                 {brand.suppliers.length}
@@ -54,18 +56,24 @@ export default async function BrandDashboard() {
 
           {/* Certifications Card */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Certifications</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Certifications
+            </h2>
             <div className="text-center">
               <div className="text-4xl font-bold text-[#3BCEAC]">
                 {totalCertifications}
               </div>
-              <div className="mt-1 text-sm text-gray-600">Total Certifications</div>
+              <div className="mt-1 text-sm text-gray-600">
+                Total Certifications
+              </div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Quick Actions</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Quick Actions
+            </h2>
             <div className="space-y-2">
               <button className="w-full rounded bg-[#3BCEAC] px-4 py-2 text-sm font-medium text-white hover:bg-[#3BCEAC]/90">
                 Find Suppliers
@@ -80,7 +88,9 @@ export default async function BrandDashboard() {
         {/* Recent Suppliers */}
         {brand.suppliers.length > 0 && (
           <div className="mt-8 rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">Your Suppliers</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
+              Your Suppliers
+            </h2>
             <div className="space-y-2">
               {brand.suppliers.map((supplier) => (
                 <div
@@ -88,8 +98,12 @@ export default async function BrandDashboard() {
                   className="flex items-center justify-between border-b border-gray-100 py-3"
                 >
                   <div>
-                    <div className="font-medium text-gray-800">{supplier.name}</div>
-                    <div className="text-sm text-gray-600">{supplier.country}</div>
+                    <div className="font-medium text-gray-800">
+                      {supplier.name}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {supplier.country}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium text-gray-800">

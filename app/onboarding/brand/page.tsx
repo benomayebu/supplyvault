@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 
 const CERTIFICATION_TYPES = [
   "GOTS (Global Organic Textile Standard)",
@@ -17,7 +16,6 @@ const CERTIFICATION_TYPES = [
 
 export default function BrandProfileSetup() {
   const router = useRouter();
-  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -50,7 +48,9 @@ export default function BrandProfileSetup() {
           country: formData.country,
           address: formData.address,
           annual_volume: formData.annualVolume,
-          required_certifications: JSON.stringify(formData.requiredCertifications),
+          required_certifications: JSON.stringify(
+            formData.requiredCertifications
+          ),
         }),
       });
 
@@ -72,14 +72,21 @@ export default function BrandProfileSetup() {
       <div className="w-full max-w-2xl">
         <div className="rounded-lg bg-white p-8 shadow-xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-primary-navy">Brand Profile Setup</h1>
-            <p className="mt-2 text-gray-600">Tell us about your brand and compliance needs</p>
+            <h1 className="text-3xl font-bold text-primary-navy">
+              Brand Profile Setup
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Tell us about your brand and compliance needs
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Company Name */}
             <div>
-              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="companyName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Company Name *
               </label>
               <input
@@ -87,7 +94,9 @@ export default function BrandProfileSetup() {
                 id="companyName"
                 required
                 value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, companyName: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="Your Brand Name"
               />
@@ -95,7 +104,10 @@ export default function BrandProfileSetup() {
 
             {/* Country */}
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Country *
               </label>
               <input
@@ -103,7 +115,9 @@ export default function BrandProfileSetup() {
                 id="country"
                 required
                 value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, country: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="e.g., United States, United Kingdom, Germany"
               />
@@ -111,13 +125,18 @@ export default function BrandProfileSetup() {
 
             {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Address
               </label>
               <textarea
                 id="address"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 rows={3}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="Full business address"
@@ -126,13 +145,18 @@ export default function BrandProfileSetup() {
 
             {/* Annual Volume */}
             <div>
-              <label htmlFor="annualVolume" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="annualVolume"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Annual Purchasing Volume
               </label>
               <select
                 id="annualVolume"
                 value={formData.annualVolume}
-                onChange={(e) => setFormData({ ...formData, annualVolume: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, annualVolume: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
               >
                 <option value="">Select volume range</option>

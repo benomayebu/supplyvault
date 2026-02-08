@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 
 const SUPPLIER_TYPES = [
   { value: "FABRIC_MILL", label: "Fabric Mill" },
@@ -25,7 +24,6 @@ const MANUFACTURING_CAPABILITIES = [
 
 export default function SupplierProfileSetup() {
   const router = useRouter();
-  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -80,14 +78,21 @@ export default function SupplierProfileSetup() {
       <div className="w-full max-w-2xl">
         <div className="rounded-lg bg-white p-8 shadow-xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-primary-navy">Supplier Profile Setup</h1>
-            <p className="mt-2 text-gray-600">Tell us about your manufacturing business</p>
+            <h1 className="text-3xl font-bold text-primary-navy">
+              Supplier Profile Setup
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Tell us about your manufacturing business
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Company Name */}
             <div>
-              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="companyName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Company Name *
               </label>
               <input
@@ -95,7 +100,9 @@ export default function SupplierProfileSetup() {
                 id="companyName"
                 required
                 value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, companyName: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="Your Company Name"
               />
@@ -103,7 +110,10 @@ export default function SupplierProfileSetup() {
 
             {/* Country */}
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Country *
               </label>
               <input
@@ -111,7 +121,9 @@ export default function SupplierProfileSetup() {
                 id="country"
                 required
                 value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, country: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="e.g., Bangladesh, India, Vietnam"
               />
@@ -119,13 +131,18 @@ export default function SupplierProfileSetup() {
 
             {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Address
               </label>
               <textarea
                 id="address"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 rows={3}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
                 placeholder="Full business address"
@@ -134,14 +151,19 @@ export default function SupplierProfileSetup() {
 
             {/* Supplier Type */}
             <div>
-              <label htmlFor="supplierType" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="supplierType"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Supplier Type *
               </label>
               <select
                 id="supplierType"
                 required
                 value={formData.supplierType}
-                onChange={(e) => setFormData({ ...formData, supplierType: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, supplierType: e.target.value })
+                }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
               >
                 <option value="">Select a type</option>

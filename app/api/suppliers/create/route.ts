@@ -11,7 +11,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, country, address, supplier_type, manufacturing_capabilities } = body;
+    const {
+      name,
+      country,
+      address,
+      supplier_type,
+      manufacturing_capabilities,
+    } = body;
 
     // Validate required fields
     if (!name || !country) {
