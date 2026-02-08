@@ -18,6 +18,11 @@ enum SubscriptionTier {
   PREMIUM
 }
 
+enum StakeholderRole {
+  SUPPLIER
+  BRAND
+}
+
 enum UserRole {
   ADMIN
   EDITOR
@@ -68,6 +73,9 @@ model Brand {
   company_name      String
   email             String           @unique
   country           String?
+  address           String?
+  annual_volume     String?          // Annual purchasing volume
+  required_certifications String?    // JSON string of certifications they look for
   subscription_tier SubscriptionTier @default(FREE)
   created_at        DateTime         @default(now())
   updated_at        DateTime         @updatedAt
@@ -103,13 +111,15 @@ model User {
 
 model Supplier {
   id                  String             @id @default(cuid())
-  brand_id            String
+  clerk_user_id       String?            @unique // Optional for backward compatibility
+  brand_id            String?            // Optional - for suppliers added by brands
   name                String
   contact_email       String?
   contact_phone       String?
   country             String
   address             String?
-  supplier_type       SupplierType
+  supplier_type       SupplierType?
+  manufacturing_capabilities String?      // JSON string of capabilities
   verification_status VerificationStatus @default(UNVERIFIED)
   verified_at         DateTime?
   verified_by         String?
@@ -117,9 +127,10 @@ model Supplier {
   updated_at          DateTime           @updatedAt
 
   // Relations
-  brand          Brand           @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  brand          Brand?          @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   certifications Certification[]
 
+  @@index([clerk_user_id])
   @@index([brand_id])
   @@index([name])
   @@index([country])

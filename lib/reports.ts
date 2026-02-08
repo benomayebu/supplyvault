@@ -69,12 +69,12 @@ export async function getSupplierReportData(
         id: supplier.id,
         name: supplier.name,
         country: supplier.country,
-        supplier_type: supplier.supplier_type,
+        supplier_type: supplier.supplier_type || "OTHER",
         contact_email: supplier.contact_email,
         contact_phone: supplier.contact_phone,
-        address: supplier.address,
+        address: supplier.address || "",
         brand: {
-          company_name: supplier.brand.company_name,
+          company_name: supplier.brand?.company_name || "Unknown",
         },
       },
       certifications: certifications.map((cert) => ({
