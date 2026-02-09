@@ -78,7 +78,10 @@ export async function POST(req: NextRequest) {
         }
 
         await processAccount(
-          { access_token: accessToken, refresh_token: refreshToken || undefined },
+          {
+            access_token: accessToken,
+            refresh_token: refreshToken || undefined,
+          },
           { uploadWebhookUrl: "/api/upload-email" }
         );
       } catch (err) {

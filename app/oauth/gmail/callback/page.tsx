@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 
 export default function GmailCallbackPage() {
   const [status, setStatus] = useState<string>("Processing...");
-  const [detail, setDetail] = useState<Record<string, unknown> | string | null>(null);
+  const [detail, setDetail] = useState<Record<string, unknown> | string | null>(
+    null
+  );
 
   useEffect(() => {
     async function finishOAuth() {

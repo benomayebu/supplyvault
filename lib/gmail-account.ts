@@ -66,16 +66,25 @@ export async function saveGmailAccount(opts: {
   return account;
 }
 
+interface TokenUpdate {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+}
+
+interface GmailAccountData {
+  access_token?: string;
+  refresh_token?: string;
+  token_type?: string;
+  expires_at?: Date;
+}
+
 export async function updateGmailTokens(
   accountId: string,
-  tokens: {
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-    token_type?: string;
-  }
+  tokens: TokenUpdate
 ) {
-  const data: any = {};
+  const data: GmailAccountData = {};
   if (tokens.access_token) data.access_token = encrypt(tokens.access_token);
   if (tokens.refresh_token) data.refresh_token = encrypt(tokens.refresh_token);
   if (tokens.token_type) data.token_type = tokens.token_type;
@@ -118,9 +127,11 @@ export async function getAccountById(id: string) {
   };
 }
 
-export async function persistRefreshedTokens(accountId: string, tokens: any) {
-  // tokens: { access_token, refresh_token?, expires_in }
-  const data: any = {};
+export async function persistRefreshedTokens(
+  accountId: string,
+  tokens: TokenUpdate
+) {
+  const data: GmailAccountData = {};
   if (tokens.access_token) data.access_token = encrypt(tokens.access_token);
   if (tokens.refresh_token)
     data.refresh_token = tokens.refresh_token

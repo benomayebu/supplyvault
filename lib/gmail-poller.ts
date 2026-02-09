@@ -112,7 +112,11 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
     try {
       const msg = await getMessage(accessToken, m.id);
       const parts = msg.payload?.parts || [];
-      const attachments: any[] = [];
+      const attachments: Array<{
+        fileName: string;
+        contentBase64: string;
+        contentType: string;
+      }> = [];
 
       // traverse parts to find attachments
       const stack = Array.isArray(parts) ? [...parts] : [];
@@ -140,13 +144,14 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
         // POST to upload webhook
         const payload = {
           messageId: msg.id,
-          from: (msg.payload?.headers || []).find((h: any) => h.name === "From")
-            ?.value,
+          from: (msg.payload?.headers || []).find(
+            (h: { name: string; value: string }) => h.name === "From"
+          )?.value,
           subject: (msg.payload?.headers || []).find(
-            (h: any) => h.name === "Subject"
+            (h: { name: string; value: string }) => h.name === "Subject"
           )?.value,
           attachments,
-        } as any;
+        };
 
         // use absolute URL in server env when running from a server worker
         const uploadUrl = cfg.uploadWebhookUrl!.startsWith("/")
@@ -168,10 +173,12 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
   }
 }
 
-export default {
+const gmailPoller = {
   processAccount,
   listMessages,
   getMessage,
   getAttachment,
   refreshAccessToken,
 };
+
+export default gmailPoller;
