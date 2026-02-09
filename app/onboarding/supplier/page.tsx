@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const SUPPLIER_TYPES = [
@@ -43,7 +43,6 @@ const CAPABILITIES = [
 
 export default function SupplierProfileSetup() {
   const { user, isLoaded } = useUser();
-  const clerk = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -121,14 +120,9 @@ export default function SupplierProfileSetup() {
             onboardingComplete: true,
           },
         });
-
-        // Force Clerk to refresh the session token so middleware sees the update
-        if (clerk.session) {
-          await clerk.session.reload();
-        }
       }
 
-      // Navigate to dashboard (session token is now refreshed)
+      // Navigate to dashboard — layout guard checks the DB directly
       window.location.href = "/supplier/dashboard";
     } catch (err) {
       console.error("Error creating supplier profile:", err);

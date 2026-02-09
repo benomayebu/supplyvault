@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const CERTIFICATION_TYPES = [
@@ -17,7 +17,6 @@ const CERTIFICATION_TYPES = [
 
 export default function BrandProfileSetup() {
   const { user, isLoaded } = useUser();
-  const clerk = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -82,14 +81,9 @@ export default function BrandProfileSetup() {
             onboardingComplete: true,
           },
         });
-
-        // Force Clerk to refresh the session token so middleware sees the update
-        if (clerk.session) {
-          await clerk.session.reload();
-        }
       }
 
-      // Navigate to dashboard (session token is now refreshed)
+      // Navigate to dashboard — layout guard checks the DB directly
       window.location.href = "/brand/dashboard";
     } catch (error) {
       console.error("Error creating brand profile:", error);

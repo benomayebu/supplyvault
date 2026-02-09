@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 
 export default function OnboardingRoleSelection() {
-  const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [selectedRole, setSelectedRole] = useState<"SUPPLIER" | "BRAND" | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+
+  // If user already completed onboarding, redirect to their dashboard
+  useEffect(() => {
+    if (isLoaded && user) {
+      const metadata = user.unsafeMetadata as {
+        stakeholderRole?: string;
+        onboardingComplete?: boolean;
+      };
+      if (metadata?.onboardingComplete && metadata?.stakeholderRole) {
+        const dashboard =
+          metadata.stakeholderRole === "SUPPLIER"
+            ? "/supplier/dashboard"
+            : "/brand/dashboard";
+        window.location.href = dashboard;
+      }
+    }
+  }, [isLoaded, user]);
 
   const handleContinue = async () => {
     if (!selectedRole || !user) return;
@@ -27,9 +42,9 @@ export default function OnboardingRoleSelection() {
 
       // Redirect to role-specific setup
       if (selectedRole === "SUPPLIER") {
-        router.push("/onboarding/supplier");
+        window.location.href = "/onboarding/supplier";
       } else {
-        router.push("/onboarding/brand");
+        window.location.href = "/onboarding/brand";
       }
     } catch (error) {
       console.error("Error updating user metadata:", error);

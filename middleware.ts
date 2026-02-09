@@ -12,18 +12,6 @@ const isPublicRoute = createRouteMatcher([
 // Define auth routes (sign-in/sign-up pages)
 const isAuthRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
 
-// Define supplier routes
-const isSupplierRoute = createRouteMatcher(["/supplier(.*)"]);
-
-// Define brand routes
-const isBrandRoute = createRouteMatcher(["/brand(.*)"]);
-
-// Define onboarding routes
-const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
-
-// Define API routes (should not be redirected by onboarding guard)
-const isApiRoute = createRouteMatcher(["/api(.*)"]);
-
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
@@ -37,47 +25,10 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // Role-based route protection (skip API routes - they handle their own auth)
-  if (userId && !isOnboardingRoute(req) && !isPublicRoute(req) && !isApiRoute(req)) {
-    const { sessionClaims } = await auth();
-    const metadata = sessionClaims?.unsafeMetadata as
-      | { stakeholderRole?: string; onboardingComplete?: boolean }
-      | undefined;
-    const role = metadata?.stakeholderRole;
-    const onboardingComplete = metadata?.onboardingComplete;
-
-    // If user has a role but hasn't completed onboarding, redirect back
-    if (role && !onboardingComplete) {
-      const onboardingPath =
-        role === "SUPPLIER" ? "/onboarding/supplier" : "/onboarding/brand";
-      return NextResponse.redirect(new URL(onboardingPath, req.url));
-    }
-
-    // If user has a role, enforce route restrictions
-    if (role) {
-      if (role === "SUPPLIER" && isBrandRoute(req)) {
-        return NextResponse.redirect(new URL("/supplier/dashboard", req.url));
-      }
-
-      if (role === "BRAND" && isSupplierRoute(req)) {
-        return NextResponse.redirect(new URL("/brand/dashboard", req.url));
-      }
-
-      // Redirect /dashboard to role-specific dashboard
-      if (req.nextUrl.pathname.startsWith("/dashboard")) {
-        if (role === "SUPPLIER") {
-          return NextResponse.redirect(new URL("/supplier/dashboard", req.url));
-        } else if (role === "BRAND") {
-          return NextResponse.redirect(new URL("/brand/dashboard", req.url));
-        }
-      }
-    } else {
-      // If user doesn't have a role yet, redirect to onboarding
-      if (!isOnboardingRoute(req)) {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
-      }
-    }
-  }
+  // NOTE: Role-based routing and onboarding guards are handled by
+  // server-side layout components (app/supplier/layout.tsx, app/brand/layout.tsx)
+  // which check the database directly. This avoids dependency on JWT session
+  // claims which require Clerk Dashboard configuration to include unsafeMetadata.
 });
 
 export const config = {
