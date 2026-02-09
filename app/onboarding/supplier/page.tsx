@@ -13,25 +13,47 @@ const SUPPLIER_TYPES = [
   { value: "OTHER", label: "Other" },
 ];
 
-const MANUFACTURING_CAPABILITIES = [
-  "Organic Cotton",
-  "Recycled Materials",
-  "Low Water Usage",
-  "Renewable Energy",
-  "Fair Trade",
-  "Small Batch Production",
-  "Custom Design",
-  "Fast Turnaround",
+const COUNTRIES = [
+  "Bangladesh",
+  "China",
+  "India",
+  "Vietnam",
+  "Pakistan",
+  "Turkey",
+  "Indonesia",
+  "Cambodia",
+  "Sri Lanka",
+  "Egypt",
+  "Other",
+];
+
+const CAPABILITIES = [
+  "Cotton Spinning",
+  "Fabric Weaving",
+  "Fabric Knitting",
+  "Fabric Dyeing",
+  "Fabric Printing",
+  "Fabric Finishing",
+  "Garment Cutting",
+  "Garment Sewing",
+  "Garment Finishing",
+  "Quality Control",
+  "Sampling",
+  "Product Development",
 ];
 
 export default function SupplierProfileSetup() {
   const router = useRouter();
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     companyName: "",
     country: "",
     address: "",
+    registrationNumber: "",
+    website: "",
+    description: "",
     supplierType: "",
     capabilities: [] as string[],
   });
@@ -48,9 +70,17 @@ export default function SupplierProfileSetup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
-      // Create supplier record
+      if (!formData.companyName || !formData.country || !formData.address) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      if (formData.capabilities.length === 0) {
+        throw new Error("Please select at least one manufacturing capability");
+      }
+
       const response = await fetch("/api/suppliers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,14 +88,17 @@ export default function SupplierProfileSetup() {
           name: formData.companyName,
           country: formData.country,
           address: formData.address,
+          registration_number: formData.registrationNumber,
+          website: formData.website,
+          description: formData.description,
           supplier_type: formData.supplierType,
           manufacturing_capabilities: JSON.stringify(formData.capabilities),
         }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create supplier profile");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create supplier profile");
       }
 
       // Mark onboarding as complete in Clerk metadata
@@ -78,31 +111,37 @@ export default function SupplierProfileSetup() {
         });
       }
 
-      // Redirect to supplier dashboard
       router.push("/supplier/dashboard");
-    } catch (error) {
-      console.error("Error creating supplier profile:", error);
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "Failed to create profile. Please try again."
-      );
+    } catch (err) {
+      console.error("Error creating supplier profile:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to create profile. Please try again.";
+      setError(message);
+      showErrorToast(message);
       setIsLoading(false);
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-primary-navy to-primary-navy/90 p-4">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         <div className="rounded-lg bg-white p-8 shadow-xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-primary-navy">
-              Supplier Profile Setup
+              Complete Your Supplier Profile
             </h1>
             <p className="mt-2 text-gray-600">
-              Tell us about your manufacturing business
+              This information will be visible to brands searching for suppliers
             </p>
           </div>
+
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Company Name */}
@@ -122,7 +161,7 @@ export default function SupplierProfileSetup() {
                   setFormData({ ...formData, companyName: e.target.value })
                 }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
-                placeholder="Your Company Name"
+                placeholder="EcoFiber Textiles Ltd"
               />
             </div>
 
@@ -134,8 +173,7 @@ export default function SupplierProfileSetup() {
               >
                 Country *
               </label>
-              <input
-                type="text"
+              <select
                 id="country"
                 required
                 value={formData.country}
@@ -143,27 +181,34 @@ export default function SupplierProfileSetup() {
                   setFormData({ ...formData, country: e.target.value })
                 }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
-                placeholder="e.g., Bangladesh, India, Vietnam"
-              />
+              >
+                <option value="">Select country</option>
+                {COUNTRIES.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Address */}
+            {/* Factory Address */}
             <div>
               <label
                 htmlFor="address"
                 className="block text-sm font-medium text-gray-700"
               >
-                Address
+                Factory Address *
               </label>
               <textarea
                 id="address"
+                required
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
                 rows={3}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
-                placeholder="Full business address"
+                placeholder="123 Factory Road, Dhaka"
               />
             </div>
 
@@ -193,16 +238,83 @@ export default function SupplierProfileSetup() {
               </select>
             </div>
 
+            {/* Registration Number */}
+            <div>
+              <label
+                htmlFor="registrationNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Company Registration Number
+              </label>
+              <input
+                type="text"
+                id="registrationNumber"
+                value={formData.registrationNumber}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    registrationNumber: e.target.value,
+                  })
+                }
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
+                placeholder="BD-12345"
+              />
+            </div>
+
+            {/* Website */}
+            <div>
+              <label
+                htmlFor="website"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Website
+              </label>
+              <input
+                type="url"
+                id="website"
+                value={formData.website}
+                onChange={(e) =>
+                  setFormData({ ...formData, website: e.target.value })
+                }
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
+                placeholder="https://www.ecofiber.com"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Company Description
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={4}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#3BCEAC] focus:outline-none focus:ring-[#3BCEAC]"
+                placeholder="Tell brands about your company, certifications, and specialties..."
+              />
+            </div>
+
             {/* Manufacturing Capabilities */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Manufacturing Capabilities
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                Manufacturing Capabilities * (Select all that apply)
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {MANUFACTURING_CAPABILITIES.map((capability) => (
+              <div className="grid grid-cols-2 gap-3">
+                {CAPABILITIES.map((capability) => (
                   <label
                     key={capability}
-                    className="flex items-center space-x-2 cursor-pointer"
+                    className={`flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-50 ${
+                      formData.capabilities.includes(capability)
+                        ? "border-[#3BCEAC] bg-[#3BCEAC]/5"
+                        : "border-gray-300"
+                    }`}
                   >
                     <input
                       type="checkbox"
@@ -216,8 +328,8 @@ export default function SupplierProfileSetup() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-4">
+            {/* Submit */}
+            <div className="flex justify-end space-x-4 pt-4">
               <button
                 type="button"
                 onClick={() => router.push("/onboarding")}
@@ -228,13 +340,13 @@ export default function SupplierProfileSetup() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`rounded-lg px-6 py-2 font-semibold transition-colors ${
+                className={`rounded-lg px-6 py-3 font-semibold transition-colors ${
                   isLoading
                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
                     : "bg-[#3BCEAC] text-white hover:bg-[#3BCEAC]/90"
                 }`}
               >
-                {isLoading ? "Creating Profile..." : "Complete Profile"}
+                {isLoading ? "Creating Profile..." : "Complete Setup"}
               </button>
             </div>
           </form>

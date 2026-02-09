@@ -10,11 +10,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check if supplier profile already exists for this user
+    const existingSupplier = await prisma.supplier.findUnique({
+      where: { clerk_user_id: userId },
+    });
+
+    if (existingSupplier) {
+      return NextResponse.json(
+        { error: "Supplier profile already exists" },
+        { status: 409 }
+      );
+    }
+
     const body = await request.json();
     const {
       name,
       country,
       address,
+      registration_number,
+      website,
+      description,
       supplier_type,
       manufacturing_capabilities,
     } = body;
@@ -34,8 +49,12 @@ export async function POST(request: NextRequest) {
         name,
         country,
         address: address || null,
+        registration_number: registration_number || null,
+        website: website || null,
+        description: description || null,
         supplier_type: supplier_type || null,
         manufacturing_capabilities: manufacturing_capabilities || null,
+        visible_in_search: false,
         contact_email: null,
         contact_phone: null,
       },

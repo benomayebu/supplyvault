@@ -124,8 +124,12 @@ model Supplier {
   contact_phone       String?
   country             String
   address             String?
+  registration_number String?
+  website             String?
+  description         String?
   supplier_type       SupplierType?
   manufacturing_capabilities String?      // JSON string of capabilities
+  visible_in_search   Boolean            @default(false)
   verification_status VerificationStatus @default(UNVERIFIED)
   verified_at         DateTime?
   verified_by         String?
