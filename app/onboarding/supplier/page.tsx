@@ -96,7 +96,8 @@ export default function SupplierProfileSetup() {
         }),
       });
 
-      if (!response.ok) {
+      // 409 means supplier already exists - that's fine, just complete onboarding
+      if (!response.ok && response.status !== 409) {
         const data = await response.json();
         throw new Error(data.error || "Failed to create supplier profile");
       }
