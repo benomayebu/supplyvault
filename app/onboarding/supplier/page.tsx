@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const SUPPLIER_TYPES = [
@@ -25,6 +26,7 @@ const MANUFACTURING_CAPABILITIES = [
 
 export default function SupplierProfileSetup() {
   const router = useRouter();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -64,6 +66,16 @@ export default function SupplierProfileSetup() {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to create supplier profile");
+      }
+
+      // Mark onboarding as complete in Clerk metadata
+      if (user) {
+        await user.update({
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            onboardingComplete: true,
+          },
+        });
       }
 
       // Redirect to supplier dashboard

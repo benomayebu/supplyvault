@@ -38,9 +38,17 @@ export default clerkMiddleware(async (auth, req) => {
   if (userId && !isOnboardingRoute(req) && !isPublicRoute(req)) {
     const { sessionClaims } = await auth();
     const metadata = sessionClaims?.unsafeMetadata as
-      | { stakeholderRole?: string }
+      | { stakeholderRole?: string; onboardingComplete?: boolean }
       | undefined;
     const role = metadata?.stakeholderRole;
+    const onboardingComplete = metadata?.onboardingComplete;
+
+    // If user has a role but hasn't completed onboarding, redirect back
+    if (role && !onboardingComplete) {
+      const onboardingPath =
+        role === "SUPPLIER" ? "/onboarding/supplier" : "/onboarding/brand";
+      return NextResponse.redirect(new URL(onboardingPath, req.url));
+    }
 
     // If user has a role, enforce route restrictions
     if (role) {

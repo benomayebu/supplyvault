@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const CERTIFICATION_TYPES = [
@@ -17,6 +18,7 @@ const CERTIFICATION_TYPES = [
 
 export default function BrandProfileSetup() {
   const router = useRouter();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -58,6 +60,16 @@ export default function BrandProfileSetup() {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to create brand profile");
+      }
+
+      // Mark onboarding as complete in Clerk metadata
+      if (user) {
+        await user.update({
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            onboardingComplete: true,
+          },
+        });
       }
 
       // Redirect to brand dashboard

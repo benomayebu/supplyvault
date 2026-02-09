@@ -9,23 +9,16 @@ export default async function BrandDashboard() {
     redirect("/sign-in");
   }
 
-  // Get brand profile
+  // Get brand profile with connected suppliers (marketplace model only)
   const brand = await prisma.brand.findUnique({
     where: { clerk_user_id: userId },
     include: {
-      suppliers: {
-        include: {
-          certifications: true,
-        },
-      },
       connections: {
         where: { status: "CONNECTED" },
         include: {
           supplier: {
-            select: {
-              id: true,
-              name: true,
-              verification_status: true,
+            include: {
+              certifications: true,
             },
           },
         },
@@ -37,25 +30,22 @@ export default async function BrandDashboard() {
     redirect("/onboarding");
   }
 
-  const totalCertifications = brand.suppliers.reduce(
+  // Derive all metrics from connected suppliers only
+  const connectedSuppliers = brand.connections.map((c) => c.supplier);
+
+  const totalCertifications = connectedSuppliers.reduce(
     (sum, supplier) => sum + supplier.certifications.length,
     0
   );
 
-  // Count verified suppliers (from both suppliers and connections)
-  const verifiedSuppliersFromList = brand.suppliers.filter(
+  const totalVerifiedSuppliers = connectedSuppliers.filter(
     (s) => s.verification_status === "VERIFIED"
   ).length;
-  const verifiedSuppliersFromConnections = brand.connections.filter(
-    (c) => c.supplier.verification_status === "VERIFIED"
-  ).length;
-  const totalVerifiedSuppliers =
-    verifiedSuppliersFromList + verifiedSuppliersFromConnections;
 
   // Count expiring certifications (within 90 days)
   const now = new Date();
   const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-  const expiringCerts = brand.suppliers.flatMap((s) =>
+  const expiringCerts = connectedSuppliers.flatMap((s) =>
     s.certifications.filter((c) => {
       const expiryDate = new Date(c.expiry_date);
       return expiryDate > now && expiryDate <= ninetyDaysFromNow;
@@ -138,42 +128,61 @@ export default async function BrandDashboard() {
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Connected Suppliers */}
         <div className="mt-8 rounded-lg bg-white p-6 shadow">
           <h2 className="mb-4 text-xl font-semibold text-gray-800">
-            Recent Activity
+            Connected Suppliers
           </h2>
-          {brand.connections.length > 0 || brand.suppliers.length > 0 ? (
+          {brand.connections.length > 0 ? (
             <div className="space-y-3">
-              {brand.connections.slice(0, 5).map((connection) => (
-                <div
+              {brand.connections.map((connection) => (
+                <a
                   key={connection.id}
-                  className="flex items-center gap-3 rounded-lg border border-gray-100 p-3"
+                  href={`/brand/suppliers/${connection.supplier.id}`}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 p-4 transition-colors hover:bg-gray-50"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                    <svg
-                      className="h-5 w-5 text-green-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                      <svg
+                        className="h-5 w-5 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {connection.supplier.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {connection.supplier.country}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-800">
+                      {connection.supplier.certifications.length} certs
+                    </div>
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs ${
+                        connection.supplier.verification_status === "VERIFIED"
+                          ? "bg-green-100 text-green-800"
+                          : connection.supplier.verification_status === "BASIC"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
+                      {connection.supplier.verification_status}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      Connected with {connection.supplier.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(connection.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
+                </a>
               ))}
             </div>
           ) : (
@@ -192,10 +201,10 @@ export default async function BrandDashboard() {
                 />
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">
-                No activity yet
+                No suppliers connected yet
               </h3>
               <p className="mt-2 text-sm text-gray-500">
-                Start by discovering and connecting with suppliers
+                Start by discovering and connecting with verified suppliers
               </p>
               <a
                 href="/brand/suppliers/discover"
@@ -206,40 +215,6 @@ export default async function BrandDashboard() {
             </div>
           )}
         </div>
-
-        {/* Recent Suppliers */}
-        {brand.suppliers.length > 0 && (
-          <div className="mt-8 rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-gray-800">
-              Your Suppliers
-            </h2>
-            <div className="space-y-2">
-              {brand.suppliers.map((supplier) => (
-                <div
-                  key={supplier.id}
-                  className="flex items-center justify-between border-b border-gray-100 py-3"
-                >
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {supplier.name}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {supplier.country}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium text-gray-800">
-                      {supplier.certifications.length} certs
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {supplier.verification_status}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
