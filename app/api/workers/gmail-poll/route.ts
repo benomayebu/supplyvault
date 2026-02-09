@@ -24,8 +24,8 @@ interface GmailTokens {
 
 interface GmailAccount {
   id: string;
-  access_token?: string;
-  refresh_token?: string;
+  access_token: string | null;
+  refresh_token: string | null;
   client_id?: string;
   client_secret?: string;
 }
@@ -38,7 +38,7 @@ async function persistRefreshedTokens(
   accountId: string,
   tokens: GmailTokens
 ): Promise<void> {
-  return await persistRefreshedTokensDb(accountId, tokens);
+  await persistRefreshedTokensDb(accountId, tokens);
 }
 
 export async function POST(req: NextRequest) {
@@ -52,28 +52,35 @@ export async function POST(req: NextRequest) {
 
     for (const acct of accounts) {
       try {
-        let tokens: GmailTokens = {
-          access_token: acct.access_token,
-          refresh_token: acct.refresh_token,
-        };
+        let accessToken = acct.access_token;
+        let refreshToken = acct.refresh_token;
 
-        // If refresh token present and access likely expired, refresh (you should check expiry in DB)
+        // If refresh token present and access likely expired, refresh
         if (
-          acct.refresh_token &&
-          !acct.access_token &&
+          refreshToken &&
+          !accessToken &&
           acct.client_id &&
           acct.client_secret
         ) {
           const refreshed = await refreshAccessToken(
-            acct.refresh_token,
+            refreshToken,
             acct.client_id,
             acct.client_secret
           );
-          tokens = { ...tokens, ...refreshed };
+          accessToken = refreshed.access_token || accessToken;
+          refreshToken = refreshed.refresh_token || refreshToken;
           await persistRefreshedTokens(acct.id, refreshed);
         }
 
-        await processAccount(tokens, { uploadWebhookUrl: "/api/upload-email" });
+        if (!accessToken) {
+          console.warn("Skipping account", acct.id, "- no access token");
+          continue;
+        }
+
+        await processAccount(
+          { access_token: accessToken, refresh_token: refreshToken || undefined },
+          { uploadWebhookUrl: "/api/upload-email" }
+        );
       } catch (err) {
         console.error("Error polling account", acct.id, err);
       }

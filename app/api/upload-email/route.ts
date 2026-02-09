@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { saveAttachmentToS3 } from "@/lib/email-ingest";
+import { saveAttachmentToS3, SavedAttachment } from "@/lib/email-ingest";
 
 interface EmailAttachment {
   fileName?: string;
@@ -19,7 +19,7 @@ interface UploadResult {
   fileName: string;
   success: boolean;
   error?: string;
-  saved?: string;
+  saved?: SavedAttachment;
   source?: { messageId?: string; from?: string; subject?: string };
 }
 
