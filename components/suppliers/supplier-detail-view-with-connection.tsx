@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   SupplierType,
@@ -64,17 +64,14 @@ export default function SupplierDetailViewWithConnection({
   const [checkingStatus, setCheckingStatus] = useState(true);
 
   // Check if already connected
-  useEffect(() => {
-    checkConnectionStatus();
-  }, [supplier.id]);
-
-  const checkConnectionStatus = async () => {
+  const checkConnectionStatus = useCallback(async () => {
     try {
       const response = await fetch("/api/connections/list");
       if (response.ok) {
         const data = await response.json();
         const connected = data.connections.some(
-          (conn: any) => conn.supplier.id === supplier.id
+          (conn: { supplier: { id: string } }) =>
+            conn.supplier.id === supplier.id
         );
         setIsConnected(connected);
       }
@@ -83,7 +80,11 @@ export default function SupplierDetailViewWithConnection({
     } finally {
       setCheckingStatus(false);
     }
-  };
+  }, [supplier.id]);
+
+  useEffect(() => {
+    checkConnectionStatus();
+  }, [checkConnectionStatus]);
 
   const handleAddToSuppliers = async () => {
     setIsLoading(true);

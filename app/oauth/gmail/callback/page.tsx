@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 export default function GmailCallbackPage() {
   const [status, setStatus] = useState<string>("Processing...");
-  const [detail, setDetail] = useState<any>(null);
+  const [detail, setDetail] = useState<unknown>(null);
 
   useEffect(() => {
     async function finishOAuth() {
@@ -21,7 +21,9 @@ export default function GmailCallbackPage() {
         setStatus("Exchanging code for tokens...");
 
         // Call API to exchange code and persist tokens server-side
-        const res = await fetch(`/api/oauth/gmail?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || "")}`);
+        const res = await fetch(
+          `/api/oauth/gmail?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || "")}`
+        );
         const json = await res.json();
 
         if (!res.ok) {
@@ -31,7 +33,11 @@ export default function GmailCallbackPage() {
         }
 
         // The server should persist tokens securely. We show a minimal success UI.
-        setStatus(json.success ? "Connected — tokens received (server should store them)." : "Server returned error");
+        setStatus(
+          json.success
+            ? "Connected — tokens received (server should store them)."
+            : "Server returned error"
+        );
         setDetail(json);
       } catch (err) {
         setStatus("OAuth callback error");
@@ -47,9 +53,15 @@ export default function GmailCallbackPage() {
       <h1 className="text-xl font-semibold">Gmail OAuth Callback</h1>
       <p className="mt-4">{status}</p>
       {detail && (
-        <pre className="mt-4 bg-gray-50 p-4 rounded text-sm overflow-auto">{JSON.stringify(detail, null, 2)}</pre>
+        <pre className="mt-4 bg-gray-50 p-4 rounded text-sm overflow-auto">
+          {JSON.stringify(detail, null, 2)}
+        </pre>
       )}
-      <p className="mt-4 text-sm text-gray-600">If this page hangs, ensure your redirect URI matches `OAUTH_REDIRECT_URI` and the server `/api/oauth/gmail` route is reachable.</p>
+      <p className="mt-4 text-sm text-gray-600">
+        If this page hangs, ensure your redirect URI matches
+        `OAUTH_REDIRECT_URI` and the server `/api/oauth/gmail` route is
+        reachable.
+      </p>
     </div>
   );
 }

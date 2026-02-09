@@ -21,7 +21,11 @@ const DEFAULTS: PollOptions = {
   uploadWebhookUrl: "/api/upload-email",
 };
 
-export async function refreshAccessToken(refreshToken: string, clientId: string, clientSecret: string) {
+export async function refreshAccessToken(
+  refreshToken: string,
+  clientId: string,
+  clientSecret: string
+) {
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -41,9 +45,15 @@ export async function refreshAccessToken(refreshToken: string, clientId: string,
   return res.json();
 }
 
-export async function listMessages(accessToken: string, query: string, maxResults = 100) {
+export async function listMessages(
+  accessToken: string,
+  query: string,
+  maxResults = 100
+) {
   const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=${maxResults}`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`listMessages failed: ${text}`);
@@ -53,7 +63,9 @@ export async function listMessages(accessToken: string, query: string, maxResult
 
 export async function getMessage(accessToken: string, messageId: string) {
   const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`getMessage failed: ${text}`);
@@ -61,9 +73,15 @@ export async function getMessage(accessToken: string, messageId: string) {
   return res.json();
 }
 
-export async function getAttachment(accessToken: string, messageId: string, attachmentId: string) {
+export async function getAttachment(
+  accessToken: string,
+  messageId: string,
+  attachmentId: string
+) {
   const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`getAttachment failed: ${text}`);
@@ -83,7 +101,11 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
   const cfg = { ...DEFAULTS, ...(options || {}) };
   const accessToken = tokens.access_token;
 
-  const messagesList = await listMessages(accessToken, cfg.query!, cfg.maxResults);
+  const messagesList = await listMessages(
+    accessToken,
+    cfg.query!,
+    cfg.maxResults
+  );
   const messages = messagesList.messages || [];
 
   for (const m of messages) {
@@ -99,9 +121,17 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
         if (!p) continue;
         if (p.filename && p.body && p.body.attachmentId) {
           // fetch attachment
-          const att = await getAttachment(accessToken, msg.id, p.body.attachmentId);
+          const att = await getAttachment(
+            accessToken,
+            msg.id,
+            p.body.attachmentId
+          );
           const data = base64UrlToBase64(att.data);
-          attachments.push({ fileName: p.filename, contentBase64: data, contentType: p.mimeType || "application/pdf" });
+          attachments.push({
+            fileName: p.filename,
+            contentBase64: data,
+            contentType: p.mimeType || "application/pdf",
+          });
         }
         if (p.parts) stack.push(...p.parts);
       }
@@ -110,13 +140,18 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
         // POST to upload webhook
         const payload = {
           messageId: msg.id,
-          from: (msg.payload?.headers || []).find((h: any) => h.name === "From")?.value,
-          subject: (msg.payload?.headers || []).find((h: any) => h.name === "Subject")?.value,
+          from: (msg.payload?.headers || []).find((h: any) => h.name === "From")
+            ?.value,
+          subject: (msg.payload?.headers || []).find(
+            (h: any) => h.name === "Subject"
+          )?.value,
           attachments,
         } as any;
 
         // use absolute URL in server env when running from a server worker
-        const uploadUrl = cfg.uploadWebhookUrl!.startsWith("/") ? `${process.env.NEXT_PUBLIC_APP_URL || (process.env.APP_URL || "http://localhost:3000")}${cfg.uploadWebhookUrl}` : cfg.uploadWebhookUrl;
+        const uploadUrl = cfg.uploadWebhookUrl!.startsWith("/")
+          ? `${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000"}${cfg.uploadWebhookUrl}`
+          : cfg.uploadWebhookUrl;
 
         if (uploadUrl) {
           await fetch(uploadUrl, {
@@ -133,4 +168,10 @@ export async function processAccount(tokens: TokenSet, options?: PollOptions) {
   }
 }
 
-export default { processAccount, listMessages, getMessage, getAttachment, refreshAccessToken };
+export default {
+  processAccount,
+  listMessages,
+  getMessage,
+  getAttachment,
+  refreshAccessToken,
+};

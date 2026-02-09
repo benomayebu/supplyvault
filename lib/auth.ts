@@ -18,16 +18,20 @@ export async function getCurrentUser() {
 /**
  * Get the stakeholder role from Clerk metadata
  */
-export async function getStakeholderRole(): Promise<"SUPPLIER" | "BRAND" | null> {
+export async function getStakeholderRole(): Promise<
+  "SUPPLIER" | "BRAND" | null
+> {
   try {
     const { sessionClaims } = await auth();
-    const metadata = sessionClaims?.unsafeMetadata as { stakeholderRole?: string } | undefined;
+    const metadata = sessionClaims?.unsafeMetadata as
+      | { stakeholderRole?: string }
+      | undefined;
     const role = metadata?.stakeholderRole;
-    
+
     if (role === "SUPPLIER" || role === "BRAND") {
       return role;
     }
-    
+
     return null;
   } catch (error) {
     console.error("Error getting stakeholder role:", error);

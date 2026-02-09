@@ -71,7 +71,10 @@ export async function GET(req: NextRequest) {
     const tokenJson = await tokenRes.json();
 
     if (!tokenRes.ok) {
-      return NextResponse.json({ success: false, error: tokenJson }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: tokenJson },
+        { status: 400 }
+      );
     }
 
     // Persist tokens securely using Prisma (encrypted) and return a safe success response.
@@ -79,9 +82,12 @@ export async function GET(req: NextRequest) {
       const { saveGmailAccount } = await import("@/lib/gmail-account");
 
       // Fetch user info to get email address
-      const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-        headers: { Authorization: `Bearer ${tokenJson.access_token}` },
-      });
+      const userRes = await fetch(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        {
+          headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+        }
+      );
       const userJson = await userRes.json();
 
       // In production, map `state` to a brand id and persist accordingly. Here `state` can be brandId.
@@ -94,18 +100,30 @@ export async function GET(req: NextRequest) {
         refreshToken: tokenJson.refresh_token,
         scope: tokenJson.scope,
         tokenType: tokenJson.token_type,
-        expiresAt: tokenJson.expires_in ? new Date(Date.now() + tokenJson.expires_in * 1000) : null,
+        expiresAt: tokenJson.expires_in
+          ? new Date(Date.now() + tokenJson.expires_in * 1000)
+          : null,
       });
 
-      return NextResponse.json({ success: true, message: "OAuth tokens saved server-side", state });
+      return NextResponse.json({
+        success: true,
+        message: "OAuth tokens saved server-side",
+        state,
+      });
     } catch (err) {
       console.error("Error saving OAuth tokens", err);
-      return NextResponse.json({ success: false, error: "Failed to persist tokens" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: "Failed to persist tokens" },
+        { status: 500 }
+      );
     }
   } catch (err) {
     console.error("Gmail OAuth route error", err);
     return NextResponse.json(
-      { success: false, error: err instanceof Error ? err.message : String(err) },
+      {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
       { status: 500 }
     );
   }

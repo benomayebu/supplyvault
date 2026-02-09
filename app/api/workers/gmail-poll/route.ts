@@ -10,30 +10,65 @@ import { processAccount, refreshAccessToken } from "@/lib/gmail-poller";
  * It expects you to implement `listAccountsToPoll()` and `persistRefreshedTokens()` which depend on your DB.
  */
 
-import { listAccountsToPoll as listAccountsToPollFromDb, persistRefreshedTokens as persistRefreshedTokensDb, markLastPolled } from "@/lib/gmail-account";
+import {
+  listAccountsToPoll as listAccountsToPollFromDb,
+  persistRefreshedTokens as persistRefreshedTokensDb,
+} from "@/lib/gmail-account";
 
-async function listAccountsToPoll() {
+interface GmailTokens {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+}
+
+interface GmailAccount {
+  id: string;
+  access_token?: string;
+  refresh_token?: string;
+  client_id?: string;
+  client_secret?: string;
+}
+
+async function listAccountsToPoll(): Promise<GmailAccount[]> {
   return await listAccountsToPollFromDb();
 }
 
-async function persistRefreshedTokens(accountId: string, tokens: any) {
+async function persistRefreshedTokens(
+  accountId: string,
+  tokens: GmailTokens
+): Promise<void> {
   return await persistRefreshedTokensDb(accountId, tokens);
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { accountId } = body as any;
+    const { accountId } = body as { accountId?: string };
 
-    const accounts = accountId ? (await listAccountsToPoll()).filter((a: any) => a.id === accountId) : await listAccountsToPoll();
+    const accounts = accountId
+      ? (await listAccountsToPoll()).filter((a) => a.id === accountId)
+      : await listAccountsToPoll();
 
     for (const acct of accounts) {
       try {
-        let tokens = { access_token: acct.access_token, refresh_token: acct.refresh_token } as any;
+        let tokens: GmailTokens = {
+          access_token: acct.access_token,
+          refresh_token: acct.refresh_token,
+        };
 
         // If refresh token present and access likely expired, refresh (you should check expiry in DB)
-        if (acct.refresh_token && !acct.access_token && acct.client_id && acct.client_secret) {
-          const refreshed = await refreshAccessToken(acct.refresh_token, acct.client_id, acct.client_secret);
+        if (
+          acct.refresh_token &&
+          !acct.access_token &&
+          acct.client_id &&
+          acct.client_secret
+        ) {
+          const refreshed = await refreshAccessToken(
+            acct.refresh_token,
+            acct.client_id,
+            acct.client_secret
+          );
           tokens = { ...tokens, ...refreshed };
           await persistRefreshedTokens(acct.id, refreshed);
         }
@@ -47,6 +82,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, processed: accounts.length });
   } catch (err) {
     console.error("gmail-poll worker error", err);
-    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 }
+    );
   }
 }

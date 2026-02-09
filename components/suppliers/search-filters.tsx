@@ -1,12 +1,14 @@
 "use client";
 
+interface FilterValues {
+  country: string;
+  type: string;
+  verification: string;
+}
+
 interface SearchFiltersProps {
-  filters: {
-    country: string;
-    type: string;
-    verification: string;
-  };
-  onChange: (filters: any) => void;
+  filters: FilterValues;
+  onChange: (filters: FilterValues) => void;
 }
 
 const SUPPLIER_TYPES = [

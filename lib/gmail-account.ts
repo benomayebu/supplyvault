@@ -47,7 +47,9 @@ export async function saveGmailAccount(opts: {
   expiresAt?: Date | null;
 }) {
   const encryptedAccess = encrypt(opts.accessToken);
-  const encryptedRefresh = opts.refreshToken ? encrypt(opts.refreshToken) : null;
+  const encryptedRefresh = opts.refreshToken
+    ? encrypt(opts.refreshToken)
+    : null;
 
   const account = await prisma.gmailAccount.create({
     data: {
@@ -64,14 +66,26 @@ export async function saveGmailAccount(opts: {
   return account;
 }
 
-export async function updateGmailTokens(accountId: string, tokens: { access_token?: string; refresh_token?: string; expires_in?: number; token_type?: string }) {
+export async function updateGmailTokens(
+  accountId: string,
+  tokens: {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    token_type?: string;
+  }
+) {
   const data: any = {};
   if (tokens.access_token) data.access_token = encrypt(tokens.access_token);
   if (tokens.refresh_token) data.refresh_token = encrypt(tokens.refresh_token);
   if (tokens.token_type) data.token_type = tokens.token_type;
-  if (tokens.expires_in) data.expires_at = new Date(Date.now() + tokens.expires_in * 1000);
+  if (tokens.expires_in)
+    data.expires_at = new Date(Date.now() + tokens.expires_in * 1000);
 
-  const updated = await prisma.gmailAccount.update({ where: { id: accountId }, data });
+  const updated = await prisma.gmailAccount.update({
+    where: { id: accountId },
+    data,
+  });
   return updated;
 }
 
@@ -108,15 +122,25 @@ export async function persistRefreshedTokens(accountId: string, tokens: any) {
   // tokens: { access_token, refresh_token?, expires_in }
   const data: any = {};
   if (tokens.access_token) data.access_token = encrypt(tokens.access_token);
-  if (tokens.refresh_token) data.refresh_token = tokens.refresh_token ? encrypt(tokens.refresh_token) : undefined;
-  if (tokens.expires_in) data.expires_at = new Date(Date.now() + tokens.expires_in * 1000);
+  if (tokens.refresh_token)
+    data.refresh_token = tokens.refresh_token
+      ? encrypt(tokens.refresh_token)
+      : undefined;
+  if (tokens.expires_in)
+    data.expires_at = new Date(Date.now() + tokens.expires_in * 1000);
 
-  const updated = await prisma.gmailAccount.update({ where: { id: accountId }, data });
+  const updated = await prisma.gmailAccount.update({
+    where: { id: accountId },
+    data,
+  });
   return updated;
 }
 
 export async function markLastPolled(accountId: string) {
-  return prisma.gmailAccount.update({ where: { id: accountId }, data: { last_polled_at: new Date() } });
+  return prisma.gmailAccount.update({
+    where: { id: accountId },
+    data: { last_polled_at: new Date() },
+  });
 }
 
 export default prisma;

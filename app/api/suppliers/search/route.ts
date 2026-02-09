@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { SupplierType, VerificationStatus } from "@prisma/client";
+import { Prisma, SupplierType, VerificationStatus } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.SupplierWhereInput = {
       // Only show suppliers with clerk_user_id (independent suppliers)
       clerk_user_id: { not: null },
     };

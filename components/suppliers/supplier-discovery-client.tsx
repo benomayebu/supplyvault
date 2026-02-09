@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SupplierType, VerificationStatus } from "@prisma/client";
 import SupplierCard from "./supplier-card";
 import SearchFilters from "./search-filters";
@@ -43,11 +43,7 @@ export default function SupplierDiscoveryClient() {
   });
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    fetchSuppliers();
-  }, [searchQuery, filters, page]);
-
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -71,7 +67,11 @@ export default function SupplierDiscoveryClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, filters, page]);
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, [fetchSuppliers]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
