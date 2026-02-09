@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const CERTIFICATION_TYPES = [
@@ -17,8 +16,8 @@ const CERTIFICATION_TYPES = [
 ];
 
 export default function BrandProfileSetup() {
-  const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const clerk = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
@@ -27,6 +26,18 @@ export default function BrandProfileSetup() {
     annualVolume: "",
     requiredCertifications: [] as string[],
   });
+
+  // If user already completed onboarding, redirect immediately
+  useEffect(() => {
+    if (isLoaded && user) {
+      const metadata = user.unsafeMetadata as {
+        onboardingComplete?: boolean;
+      };
+      if (metadata?.onboardingComplete) {
+        window.location.href = "/brand/dashboard";
+      }
+    }
+  }, [isLoaded, user]);
 
   const handleCertificationToggle = (cert: string) => {
     setFormData((prev) => ({
@@ -57,7 +68,8 @@ export default function BrandProfileSetup() {
         }),
       });
 
-      if (!response.ok) {
+      // 409 means brand already exists - that's fine, just complete onboarding
+      if (!response.ok && response.status !== 409) {
         const error = await response.json();
         throw new Error(error.error || "Failed to create brand profile");
       }
@@ -70,9 +82,14 @@ export default function BrandProfileSetup() {
             onboardingComplete: true,
           },
         });
+
+        // Force Clerk to refresh the session token so middleware sees the update
+        if (clerk.session) {
+          await clerk.session.reload();
+        }
       }
 
-      // Use hard navigation to force Clerk session refresh
+      // Navigate to dashboard (session token is now refreshed)
       window.location.href = "/brand/dashboard";
     } catch (error) {
       console.error("Error creating brand profile:", error);
@@ -216,7 +233,7 @@ export default function BrandProfileSetup() {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => router.push("/onboarding")}
+                onClick={() => (window.location.href = "/onboarding")}
                 className="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 hover:bg-gray-50"
               >
                 Back

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { showErrorToast } from "@/lib/toast";
 
 const SUPPLIER_TYPES = [
@@ -43,8 +42,8 @@ const CAPABILITIES = [
 ];
 
 export default function SupplierProfileSetup() {
-  const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const clerk = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -57,6 +56,18 @@ export default function SupplierProfileSetup() {
     supplierType: "",
     capabilities: [] as string[],
   });
+
+  // If user already completed onboarding, redirect immediately
+  useEffect(() => {
+    if (isLoaded && user) {
+      const metadata = user.unsafeMetadata as {
+        onboardingComplete?: boolean;
+      };
+      if (metadata?.onboardingComplete) {
+        window.location.href = "/supplier/dashboard";
+      }
+    }
+  }, [isLoaded, user]);
 
   const handleCapabilityToggle = (capability: string) => {
     setFormData((prev) => ({
@@ -110,10 +121,14 @@ export default function SupplierProfileSetup() {
             onboardingComplete: true,
           },
         });
+
+        // Force Clerk to refresh the session token so middleware sees the update
+        if (clerk.session) {
+          await clerk.session.reload();
+        }
       }
 
-      // Use hard navigation to force Clerk session refresh
-      // (router.push won't refresh the JWT with updated metadata)
+      // Navigate to dashboard (session token is now refreshed)
       window.location.href = "/supplier/dashboard";
     } catch (err) {
       console.error("Error creating supplier profile:", err);
@@ -335,7 +350,7 @@ export default function SupplierProfileSetup() {
             <div className="flex justify-end space-x-4 pt-4">
               <button
                 type="button"
-                onClick={() => router.push("/onboarding")}
+                onClick={() => (window.location.href = "/onboarding")}
                 className="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 hover:bg-gray-50"
               >
                 Back
