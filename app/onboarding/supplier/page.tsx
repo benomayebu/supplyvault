@@ -112,7 +112,9 @@ export default function SupplierProfileSetup() {
         });
       }
 
-      router.push("/supplier/dashboard");
+      // Use hard navigation to force Clerk session refresh
+      // (router.push won't refresh the JWT with updated metadata)
+      window.location.href = "/supplier/dashboard";
     } catch (err) {
       console.error("Error creating supplier profile:", err);
       const message =

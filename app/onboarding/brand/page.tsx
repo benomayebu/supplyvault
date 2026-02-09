@@ -72,8 +72,8 @@ export default function BrandProfileSetup() {
         });
       }
 
-      // Redirect to brand dashboard
-      router.push("/brand/dashboard");
+      // Use hard navigation to force Clerk session refresh
+      window.location.href = "/brand/dashboard";
     } catch (error) {
       console.error("Error creating brand profile:", error);
       showErrorToast(
