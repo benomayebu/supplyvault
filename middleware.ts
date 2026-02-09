@@ -21,6 +21,9 @@ const isBrandRoute = createRouteMatcher(["/brand(.*)"]);
 // Define onboarding routes
 const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
 
+// Define API routes (should not be redirected by onboarding guard)
+const isApiRoute = createRouteMatcher(["/api(.*)"]);
+
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
@@ -34,8 +37,8 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // Role-based route protection
-  if (userId && !isOnboardingRoute(req) && !isPublicRoute(req)) {
+  // Role-based route protection (skip API routes - they handle their own auth)
+  if (userId && !isOnboardingRoute(req) && !isPublicRoute(req) && !isApiRoute(req)) {
     const { sessionClaims } = await auth();
     const metadata = sessionClaims?.unsafeMetadata as
       | { stakeholderRole?: string; onboardingComplete?: boolean }
