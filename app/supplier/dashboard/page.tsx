@@ -139,6 +139,12 @@ export default async function SupplierDashboard() {
             </h2>
             <div className="space-y-2">
               <a
+                href="/supplier/analytics"
+                className="block w-full rounded bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
+              >
+                View Analytics
+              </a>
+              <a
                 href="/supplier/certifications/upload"
                 className="block w-full rounded bg-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#3BCEAC]/90"
               >
