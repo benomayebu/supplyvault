@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -13,7 +14,47 @@ const s3Client = new S3Client({
   },
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || "";
+const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "";
+
+/**
+ * Upload a file to S3 and return the URL
+ */
+export async function uploadToS3(
+  file: Buffer,
+  key: string,
+  contentType: string
+): Promise<string> {
+  if (!BUCKET_NAME) {
+    throw new Error("AWS_S3_BUCKET_NAME environment variable is not set");
+  }
+
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    Body: file,
+    ContentType: contentType,
+  });
+
+  await s3Client.send(command);
+  
+  // Return the S3 URL
+  return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
+}
+
+/**
+ * Generate a unique S3 key for a certification document
+ */
+export function generateCertificationKey(
+  supplierId: string,
+  certificationId: string,
+  filename: string
+): string {
+  const timestamp = Date.now();
+  const extension = filename.split('.').pop();
+  // Sanitize filename to remove special characters
+  const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+  return `certifications/${supplierId}/${certificationId}_${timestamp}_${safeName}`;
+}
 
 /**
  * Generate a pre-signed URL for uploading a file to S3
@@ -38,11 +79,16 @@ export async function generateUploadUrl(
 
 /**
  * Generate a pre-signed URL for downloading/viewing a file from S3
+ * URL expires after specified time (default 1 hour)
  */
 export async function generateDownloadUrl(
   key: string,
   expiresIn: number = 3600 // 1 hour default
 ): Promise<string> {
+  if (!BUCKET_NAME) {
+    throw new Error("AWS_S3_BUCKET_NAME environment variable is not set");
+  }
+
   // Extract key from full URL if needed
   const s3Key = key.includes("s3.amazonaws.com/")
     ? key.split("s3.amazonaws.com/")[1]
@@ -55,6 +101,27 @@ export async function generateDownloadUrl(
 
   const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
   return signedUrl;
+}
+
+/**
+ * Delete a document from S3
+ */
+export async function deleteFromS3(key: string): Promise<void> {
+  if (!BUCKET_NAME) {
+    throw new Error("AWS_S3_BUCKET_NAME environment variable is not set");
+  }
+
+  // Extract key from full URL if needed
+  const s3Key = key.includes("s3.amazonaws.com/")
+    ? key.split("s3.amazonaws.com/")[1]
+    : key;
+
+  const command = new DeleteObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: s3Key,
+  });
+
+  await s3Client.send(command);
 }
 
 /**

@@ -48,29 +48,53 @@ export default function UploadCertificateClient() {
     setIsLoading(true);
 
     try {
-      // For now, we'll create the certification without file upload
-      // File upload can be added later with proper storage setup
-      const response = await fetch("/api/certifications/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          certification_type: formData.certification_type,
-          certification_name: formData.certification_name,
-          issuing_body: formData.issuing_body,
-          issue_date: formData.issue_date,
-          expiry_date: formData.expiry_date,
-          certificate_number: formData.certificate_number,
-          scope: formData.scope,
-        }),
-      });
+      // Check if file is provided and should be uploaded
+      if (formData.file) {
+        // Use FormData for file upload
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", formData.file);
+        uploadFormData.append("certification_type", formData.certification_type);
+        uploadFormData.append("certification_name", formData.certification_name);
+        uploadFormData.append("issuing_body", formData.issuing_body);
+        uploadFormData.append("issue_date", formData.issue_date);
+        uploadFormData.append("expiry_date", formData.expiry_date);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to upload certification");
+        const response = await fetch("/api/certifications/upload", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to upload certification");
+        }
+
+        showSuccessToast("Certification uploaded successfully!");
+        router.push("/supplier/dashboard");
+      } else {
+        // Use JSON for non-file upload
+        const response = await fetch("/api/certifications/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            certification_type: formData.certification_type,
+            certification_name: formData.certification_name,
+            issuing_body: formData.issuing_body,
+            issue_date: formData.issue_date,
+            expiry_date: formData.expiry_date,
+            certificate_number: formData.certificate_number,
+            scope: formData.scope,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to upload certification");
+        }
+
+        showSuccessToast("Certification uploaded successfully!");
+        router.push("/supplier/dashboard");
       }
-
-      showSuccessToast("Certification uploaded successfully!");
-      router.push("/supplier/dashboard");
     } catch (error) {
       console.error("Error uploading certification:", error);
       showErrorToast(
@@ -228,25 +252,45 @@ export default function UploadCertificateClient() {
             />
           </div>
 
-          {/* File Upload (Optional for now) */}
+          {/* File Upload */}
           <div>
             <label
               htmlFor="file"
               className="block text-sm font-medium text-gray-700"
             >
-              Certificate File (PDF)
+              Certificate Document
             </label>
             <input
               type="file"
               id="file"
               name="file"
-              accept=".pdf"
+              accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleFileChange}
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded file:border-0 file:bg-[#3BCEAC] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#3BCEAC]/90"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Optional: Upload the certificate PDF (coming soon)
+              Upload PDF, JPEG, or PNG (max 10MB)
             </p>
+            {formData.file && (
+              <div className="mt-2 flex items-center gap-2 rounded bg-green-50 px-3 py-2 text-sm text-green-700">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>
+                  {formData.file.name} ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
