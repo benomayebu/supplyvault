@@ -3,7 +3,7 @@
  * Extracts text content from PDF files for AI processing
  */
 
-import pdfParse from "pdf-parse";
+import * as pdfParse from "pdf-parse";
 
 export interface PDFParseResult {
   text: string;
@@ -27,6 +27,7 @@ export async function extractTextFromPDF(
   buffer: Buffer
 ): Promise<PDFParseResult> {
   try {
+    // @ts-expect-error - pdf-parse has quirky types
     const data = await pdfParse(buffer);
 
     return {
@@ -58,12 +59,10 @@ export async function extractTextFromPDF(
 /**
  * Extract text from a PDF file (accepts File or Buffer)
  */
-export async function parsePDF(
-  file: File | Buffer
-): Promise<PDFParseResult> {
+export async function parsePDF(file: File | Buffer): Promise<PDFParseResult> {
   let buffer: Buffer;
 
-  if (file instanceof Buffer) {
+  if (Buffer.isBuffer(file)) {
     buffer = file;
   } else {
     // Convert File to Buffer

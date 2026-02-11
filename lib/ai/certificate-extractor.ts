@@ -25,9 +25,7 @@ const CertificateDataSchema = z.object({
       "OTHER",
     ])
     .describe("The type of certification"),
-  certification_name: z
-    .string()
-    .describe("The full name of the certification"),
+  certification_name: z.string().describe("The full name of the certification"),
   issuing_body: z
     .string()
     .describe("The organization that issued the certificate"),
@@ -118,9 +116,7 @@ Please extract the information with high accuracy. If you're not certain about a
     const expiryDate = new Date(result.object.expiry_date);
 
     if (isNaN(issueDate.getTime())) {
-      warnings.push(
-        "Issue date could not be parsed correctly. Please verify."
-      );
+      warnings.push("Issue date could not be parsed correctly. Please verify.");
     }
 
     if (isNaN(expiryDate.getTime())) {
