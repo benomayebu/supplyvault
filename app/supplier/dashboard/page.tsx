@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { ExpiryTimeline } from "@/components/analytics/expiry-timeline";
+import { ExpiryStats } from "@/components/analytics/expiry-stats";
 
 export default async function SupplierDashboard() {
   const { userId } = await auth();
@@ -39,10 +41,10 @@ export default async function SupplierDashboard() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Profile Status Alert */}
         {!isProfileComplete && (
-          <div className="mb-6 rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
+          <div className="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg
@@ -74,6 +76,16 @@ export default async function SupplierDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Expiry Statistics */}
+        {supplier.certifications.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Certification Overview
+            </h2>
+            <ExpiryStats certifications={supplier.certifications} />
           </div>
         )}
 
@@ -142,9 +154,22 @@ export default async function SupplierDashboard() {
           </div>
         </div>
 
+        {/* Expiry Timeline */}
+        {supplier.certifications.length > 0 && (
+          <div className="rounded-lg bg-white p-6 shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">
+              Upcoming Expiries
+            </h2>
+            <ExpiryTimeline
+              certifications={supplier.certifications}
+              viewType="supplier"
+            />
+          </div>
+        )}
+
         {/* Recent Certifications */}
         {supplier.certifications.length > 0 ? (
-          <div className="mt-8 rounded-lg bg-white p-6 shadow">
+          <div className="rounded-lg bg-white p-6 shadow">
             <h2 className="mb-4 text-xl font-semibold text-gray-800">
               Recent Certifications
             </h2>
