@@ -36,7 +36,7 @@ export async function uploadToS3(
   });
 
   await s3Client.send(command);
-  
+
   // Return the S3 URL
   return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
 }
@@ -50,9 +50,8 @@ export function generateCertificationKey(
   filename: string
 ): string {
   const timestamp = Date.now();
-  const extension = filename.split('.').pop();
   // Sanitize filename to remove special characters
-  const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
   return `certifications/${supplierId}/${certificationId}_${timestamp}_${safeName}`;
 }
 

@@ -39,7 +39,7 @@ export async function GET(
 
     // Check access permissions
     const isSupplierOwner = certification.supplier.clerk_user_id === userId;
-    
+
     // Check if user is the brand owner (if supplier has a brand)
     let isBrandOwner = false;
     if (certification.supplier.brand_id) {
@@ -71,10 +71,7 @@ export async function GET(
 
     // Allow access if user is supplier owner, brand owner, or has connection
     if (!isSupplierOwner && !isBrandOwner && !hasConnection) {
-      return NextResponse.json(
-        { error: "Access denied" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     if (!certification.document_url) {
@@ -86,7 +83,7 @@ export async function GET(
 
     // If it's a local file path (starts with /), return as-is
     if (certification.document_url.startsWith("/")) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         url: certification.document_url,
         isPdf: certification.document_url.toLowerCase().endsWith(".pdf"),
         isImage: /\.(jpg|jpeg|png)$/i.test(certification.document_url),
@@ -96,7 +93,7 @@ export async function GET(
     // Generate signed URL for S3 files
     const signedUrl = await generateDownloadUrl(certification.document_url);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       url: signedUrl,
       isPdf: certification.document_url.toLowerCase().includes(".pdf"),
       isImage: /\.(jpg|jpeg|png)/i.test(certification.document_url),

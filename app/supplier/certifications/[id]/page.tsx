@@ -39,7 +39,7 @@ export default async function CertificationDetailPage({
         </div>
         <div className="container mx-auto px-4 py-8">
           <p className="text-gray-600">
-            The certification you're looking for doesn't exist.
+            The certification you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             href="/supplier/dashboard"

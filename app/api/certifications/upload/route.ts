@@ -95,7 +95,9 @@ export async function POST(request: NextRequest) {
 
     // Extract form fields
     const file = formData.get("file") as File | null;
-    const certificationType = formData.get("certification_type") as CertificationType;
+    const certificationType = formData.get(
+      "certification_type"
+    ) as CertificationType;
     const certificationName = formData.get("certification_name") as string;
     const issuingBody = formData.get("issuing_body") as string;
     const issueDate = formData.get("issue_date") as string;

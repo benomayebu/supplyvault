@@ -53,8 +53,14 @@ export default function UploadCertificateClient() {
         // Use FormData for file upload
         const uploadFormData = new FormData();
         uploadFormData.append("file", formData.file);
-        uploadFormData.append("certification_type", formData.certification_type);
-        uploadFormData.append("certification_name", formData.certification_name);
+        uploadFormData.append(
+          "certification_type",
+          formData.certification_type
+        );
+        uploadFormData.append(
+          "certification_name",
+          formData.certification_name
+        );
         uploadFormData.append("issuing_body", formData.issuing_body);
         uploadFormData.append("issue_date", formData.issue_date);
         uploadFormData.append("expiry_date", formData.expiry_date);
@@ -287,7 +293,8 @@ export default function UploadCertificateClient() {
                   />
                 </svg>
                 <span>
-                  {formData.file.name} ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
+                  {formData.file.name} (
+                  {(formData.file.size / 1024 / 1024).toFixed(2)} MB)
                 </span>
               </div>
             )}
