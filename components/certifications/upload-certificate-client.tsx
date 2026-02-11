@@ -17,6 +17,14 @@ const CERTIFICATION_TYPES = [
 export default function UploadCertificateClient() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parsedData, setParsedData] = useState<{
+    data: {
+      confidence: number;
+      [key: string]: string | number;
+    };
+    warnings?: string[];
+  } | null>(null);
   const [formData, setFormData] = useState({
     certification_type: "",
     certification_name: "",
@@ -40,6 +48,74 @@ export default function UploadCertificateClient() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData((prev) => ({ ...prev, file: e.target.files![0] }));
+      // Clear any previous parsed data when file changes
+      setParsedData(null);
+    }
+  };
+
+  const handleAIParse = async () => {
+    if (!formData.file) {
+      showErrorToast("Please select a file first");
+      return;
+    }
+
+    if (formData.file.type !== "application/pdf") {
+      showErrorToast("AI parsing only works with PDF files");
+      return;
+    }
+
+    setIsParsing(true);
+
+    try {
+      const parseFormData = new FormData();
+      parseFormData.append("file", formData.file);
+
+      const response = await fetch("/api/certifications/parse", {
+        method: "POST",
+        body: parseFormData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to parse certificate");
+      }
+
+      // Auto-fill form with parsed data
+      setFormData((prev) => ({
+        ...prev,
+        certification_type:
+          result.data.certification_type || prev.certification_type,
+        certification_name:
+          result.data.certification_name || prev.certification_name,
+        issuing_body: result.data.issuing_body || prev.issuing_body,
+        issue_date: result.data.issue_date || prev.issue_date,
+        expiry_date: result.data.expiry_date || prev.expiry_date,
+        certificate_number:
+          result.data.certificate_number || prev.certificate_number,
+        scope: result.data.scope || prev.scope,
+      }));
+
+      setParsedData(result);
+
+      if (result.warnings && result.warnings.length > 0) {
+        showErrorToast(
+          `Data extracted! Please review: ${result.warnings.join(", ")}`
+        );
+      } else {
+        showSuccessToast(
+          `Data extracted successfully! Confidence: ${Math.round(result.data.confidence * 100)}%`
+        );
+      }
+    } catch (error) {
+      console.error("AI parsing error:", error);
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to parse certificate. Please enter data manually."
+      );
+    } finally {
+      setIsParsing(false);
     }
   };
 
@@ -48,29 +124,59 @@ export default function UploadCertificateClient() {
     setIsLoading(true);
 
     try {
-      // For now, we'll create the certification without file upload
-      // File upload can be added later with proper storage setup
-      const response = await fetch("/api/certifications/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          certification_type: formData.certification_type,
-          certification_name: formData.certification_name,
-          issuing_body: formData.issuing_body,
-          issue_date: formData.issue_date,
-          expiry_date: formData.expiry_date,
-          certificate_number: formData.certificate_number,
-          scope: formData.scope,
-        }),
-      });
+      // Check if file is provided and should be uploaded
+      if (formData.file) {
+        // Use FormData for file upload
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", formData.file);
+        uploadFormData.append(
+          "certification_type",
+          formData.certification_type
+        );
+        uploadFormData.append(
+          "certification_name",
+          formData.certification_name
+        );
+        uploadFormData.append("issuing_body", formData.issuing_body);
+        uploadFormData.append("issue_date", formData.issue_date);
+        uploadFormData.append("expiry_date", formData.expiry_date);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to upload certification");
+        const response = await fetch("/api/certifications/upload", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to upload certification");
+        }
+
+        showSuccessToast("Certification uploaded successfully!");
+        router.push("/supplier/dashboard");
+      } else {
+        // Use JSON for non-file upload
+        const response = await fetch("/api/certifications/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            certification_type: formData.certification_type,
+            certification_name: formData.certification_name,
+            issuing_body: formData.issuing_body,
+            issue_date: formData.issue_date,
+            expiry_date: formData.expiry_date,
+            certificate_number: formData.certificate_number,
+            scope: formData.scope,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to upload certification");
+        }
+
+        showSuccessToast("Certification uploaded successfully!");
+        router.push("/supplier/dashboard");
       }
-
-      showSuccessToast("Certification uploaded successfully!");
-      router.push("/supplier/dashboard");
     } catch (error) {
       console.error("Error uploading certification:", error);
       showErrorToast(
@@ -228,25 +334,137 @@ export default function UploadCertificateClient() {
             />
           </div>
 
-          {/* File Upload (Optional for now) */}
+          {/* File Upload */}
           <div>
             <label
               htmlFor="file"
               className="block text-sm font-medium text-gray-700"
             >
-              Certificate File (PDF)
+              Certificate Document
             </label>
             <input
               type="file"
               id="file"
               name="file"
-              accept=".pdf"
+              accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleFileChange}
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded file:border-0 file:bg-[#3BCEAC] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#3BCEAC]/90"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Optional: Upload the certificate PDF (coming soon)
+              Upload PDF, JPEG, or PNG (max 10MB)
             </p>
+            {formData.file && (
+              <div className="mt-2 flex items-center gap-2 rounded bg-green-50 px-3 py-2 text-sm text-green-700">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>
+                  {formData.file.name} (
+                  {(formData.file.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              </div>
+            )}
+
+            {/* AI Auto-Fill Button */}
+            {formData.file && formData.file.type === "application/pdf" && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={handleAIParse}
+                  disabled={isParsing}
+                  className="inline-flex items-center gap-2 rounded-lg border-2 border-dashed border-[#3BCEAC] bg-[#3BCEAC]/10 px-4 py-2 text-sm font-medium text-[#3BCEAC] hover:bg-[#3BCEAC]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isParsing ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Extracting data with AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                      <span>✨ Auto-fill from PDF with AI</span>
+                    </>
+                  )}
+                </button>
+                <p className="mt-1 text-xs text-gray-500">
+                  AI will extract certification details from your PDF
+                </p>
+              </div>
+            )}
+
+            {/* Show confidence score if available */}
+            {parsedData && (
+              <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div className="text-sm text-blue-800">
+                    <span className="font-medium">AI Extraction Complete!</span>
+                    <br />
+                    <span className="text-xs">
+                      Confidence: {Math.round(parsedData.data.confidence * 100)}
+                      % • Please review all fields before submitting
+                    </span>
+                  </div>
+                </div>
+                {parsedData.warnings && parsedData.warnings.length > 0 && (
+                  <div className="mt-2 text-xs text-blue-700">
+                    ⚠️ {parsedData.warnings.join(" • ")}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Actions */}

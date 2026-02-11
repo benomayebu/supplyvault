@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 import { prisma } from "@/lib/db";
 import { CertificationType } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { getCurrentSupplier } from "@/lib/auth";
+import { uploadToS3, generateCertificationKey } from "@/lib/s3";
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,22 +94,19 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
     // Extract form fields
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
     const certificationType = formData.get(
-      "certificationType"
+      "certification_type"
     ) as CertificationType;
-    const certificationName = formData.get("certificationName") as string;
-    const certificateNumber = formData.get("certificateNumber") as string;
-    const issuingBody = formData.get("issuingBody") as string;
-    const issueDate = formData.get("issueDate") as string;
-    const expiryDate = formData.get("expiryDate") as string;
+    const certificationName = formData.get("certification_name") as string;
+    const issuingBody = formData.get("issuing_body") as string;
+    const issueDate = formData.get("issue_date") as string;
+    const expiryDate = formData.get("expiry_date") as string;
 
     // Validate required fields
     if (
-      !file ||
       !certificationType ||
       !certificationName ||
-      !certificateNumber ||
       !issuingBody ||
       !issueDate ||
       !expiryDate
@@ -120,43 +116,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Validate file type
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Please upload PDF, JPG, or PNG" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "File size exceeds 10MB limit" },
-        { status: 400 }
-      );
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const filename = `${supplier.id}_${timestamp}_${sanitizedFilename}`;
-
-    // Save file to public/uploads directory
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create uploads directory if it doesn't exist
-    const uploadDir = join(process.cwd(), "public", "uploads", "certificates");
-    const { mkdir } = await import("fs/promises");
-    await mkdir(uploadDir, { recursive: true });
-
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Create public URL for the file
-    const documentUrl = `/uploads/certificates/${filename}`;
 
     // Calculate certification status based on expiry date
     const expiryDateTime = new Date(expiryDate);
@@ -174,30 +133,106 @@ export async function POST(request: NextRequest) {
       status = "VALID";
     }
 
-    // Create certification record in database
-    const certification = await prisma.certification.create({
-      data: {
-        supplier_id: supplier.id,
-        certification_type: certificationType,
-        certification_name: certificationName,
-        issuing_body: issuingBody,
-        issue_date: new Date(issueDate),
-        expiry_date: new Date(expiryDate),
-        document_url: documentUrl,
-        status: status,
-      },
-    });
+    let documentUrl = "";
 
-    return NextResponse.json({
-      success: true,
-      certification: {
-        id: certification.id,
-        certification_type: certification.certification_type,
-        certification_name: certification.certification_name,
-        status: certification.status,
-        expiry_date: certification.expiry_date,
-      },
-    });
+    // Handle file upload if provided
+    if (file && file.size > 0) {
+      // Validate file type
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: "Invalid file type. Please upload PDF, JPG, or PNG" },
+          { status: 400 }
+        );
+      }
+
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: "File size exceeds 10MB limit" },
+          { status: 400 }
+        );
+      }
+
+      // Create certification record first to get the ID
+      const certification = await prisma.certification.create({
+        data: {
+          supplier_id: supplier.id,
+          certification_type: certificationType,
+          certification_name: certificationName,
+          issuing_body: issuingBody,
+          issue_date: new Date(issueDate),
+          expiry_date: new Date(expiryDate),
+          document_url: "pending", // Temporary placeholder
+          status: status,
+        },
+      });
+
+      try {
+        // Convert file to buffer
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Generate S3 key
+        const s3Key = generateCertificationKey(
+          supplier.id,
+          certification.id,
+          file.name
+        );
+
+        // Upload to S3
+        documentUrl = await uploadToS3(buffer, s3Key, file.type);
+
+        // Update certification with S3 URL
+        await prisma.certification.update({
+          where: { id: certification.id },
+          data: { document_url: documentUrl },
+        });
+
+        return NextResponse.json({
+          success: true,
+          certification: {
+            id: certification.id,
+            certification_type: certification.certification_type,
+            certification_name: certification.certification_name,
+            status: certification.status,
+            expiry_date: certification.expiry_date,
+            document_url: documentUrl,
+          },
+        });
+      } catch (uploadError) {
+        // If upload fails, delete the certification record
+        await prisma.certification.delete({
+          where: { id: certification.id },
+        });
+        throw uploadError;
+      }
+    } else {
+      // Create certification without document
+      const certification = await prisma.certification.create({
+        data: {
+          supplier_id: supplier.id,
+          certification_type: certificationType,
+          certification_name: certificationName,
+          issuing_body: issuingBody,
+          issue_date: new Date(issueDate),
+          expiry_date: new Date(expiryDate),
+          document_url: "", // No document uploaded
+          status: status,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        certification: {
+          id: certification.id,
+          certification_type: certification.certification_type,
+          certification_name: certification.certification_name,
+          status: certification.status,
+          expiry_date: certification.expiry_date,
+        },
+      });
+    }
   } catch (error) {
     console.error("Certificate upload error:", error);
     return NextResponse.json(
