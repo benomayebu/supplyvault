@@ -150,22 +150,58 @@ export default async function SupplierDashboard() {
             </h2>
             <div className="space-y-2">
               {supplier.certifications.map((cert) => (
-                <div
+                <a
                   key={cert.id}
-                  className="flex items-center justify-between border-b border-gray-100 py-2"
+                  href={`/supplier/certifications/${cert.id}`}
+                  className="flex items-center justify-between border-b border-gray-100 py-2 hover:bg-gray-50 transition-colors"
                 >
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {cert.certification_name}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-gray-800">
+                        {cert.certification_name}
+                      </div>
+                      {cert.document_url && (
+                        <span className="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          Document
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">
                       {cert.certification_type}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Expires: {new Date(cert.expiry_date).toLocaleDateString()}
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-600">
+                      Expires: {new Date(cert.expiry_date).toLocaleDateString()}
+                    </div>
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>
