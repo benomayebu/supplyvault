@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { ExpiryTimeline } from "@/components/analytics/expiry-timeline";
+import { ExpiryStats } from "@/components/analytics/expiry-stats";
 
 export default async function SupplierDashboard() {
   const { userId } = await auth();
@@ -39,10 +41,10 @@ export default async function SupplierDashboard() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Profile Status Alert */}
         {!isProfileComplete && (
-          <div className="mb-6 rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
+          <div className="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg
@@ -74,6 +76,16 @@ export default async function SupplierDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Expiry Statistics */}
+        {supplier.certifications.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Certification Overview
+            </h2>
+            <ExpiryStats certifications={supplier.certifications} />
           </div>
         )}
 
@@ -127,6 +139,12 @@ export default async function SupplierDashboard() {
             </h2>
             <div className="space-y-2">
               <a
+                href="/supplier/analytics"
+                className="block w-full rounded bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
+              >
+                View Analytics
+              </a>
+              <a
                 href="/supplier/certifications/upload"
                 className="block w-full rounded bg-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#3BCEAC]/90"
               >
@@ -142,30 +160,79 @@ export default async function SupplierDashboard() {
           </div>
         </div>
 
+        {/* Expiry Timeline */}
+        {supplier.certifications.length > 0 && (
+          <div className="rounded-lg bg-white p-6 shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">
+              Upcoming Expiries
+            </h2>
+            <ExpiryTimeline
+              certifications={supplier.certifications}
+              viewType="supplier"
+            />
+          </div>
+        )}
+
         {/* Recent Certifications */}
         {supplier.certifications.length > 0 ? (
-          <div className="mt-8 rounded-lg bg-white p-6 shadow">
+          <div className="rounded-lg bg-white p-6 shadow">
             <h2 className="mb-4 text-xl font-semibold text-gray-800">
               Recent Certifications
             </h2>
             <div className="space-y-2">
               {supplier.certifications.map((cert) => (
-                <div
+                <a
                   key={cert.id}
-                  className="flex items-center justify-between border-b border-gray-100 py-2"
+                  href={`/supplier/certifications/${cert.id}`}
+                  className="flex items-center justify-between border-b border-gray-100 py-2 hover:bg-gray-50 transition-colors"
                 >
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {cert.certification_name}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-gray-800">
+                        {cert.certification_name}
+                      </div>
+                      {cert.document_url && (
+                        <span className="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          Document
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">
                       {cert.certification_type}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Expires: {new Date(cert.expiry_date).toLocaleDateString()}
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-600">
+                      Expires: {new Date(cert.expiry_date).toLocaleDateString()}
+                    </div>
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>

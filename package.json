@@ -12,6 +12,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.41",
     "@aws-sdk/client-s3": "^3.958.0",
     "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@clerk/nextjs": "^6.36.5",
@@ -23,13 +24,16 @@
     "@react-email/components": "^1.0.2",
     "@react-email/render": "^2.0.0",
     "@react-pdf/renderer": "^4.3.1",
+    "ai": "^6.0.79",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.562.0",
     "next": "^14.2.0",
+    "pdf-parse": "^2.4.5",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-email": "^5.1.0",
+    "recharts": "^3.7.0",
     "resend": "^6.6.0",
     "svix": "^1.82.0",
     "zod": "^4.2.1"

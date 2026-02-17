@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { ExpiryTimeline } from "@/components/analytics/expiry-timeline";
+import { ExpiryStats } from "@/components/analytics/expiry-stats";
 
 export default async function BrandDashboard() {
   const { userId } = await auth();
@@ -42,15 +44,21 @@ export default async function BrandDashboard() {
     (s) => s.verification_status === "VERIFIED"
   ).length;
 
+  // Get all certifications from connected suppliers
+  const allCertifications = connectedSuppliers.flatMap((s) =>
+    s.certifications.map((cert) => ({
+      ...cert,
+      supplier: { name: s.name },
+    }))
+  );
+
   // Count expiring certifications (within 90 days)
   const now = new Date();
   const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-  const expiringCerts = connectedSuppliers.flatMap((s) =>
-    s.certifications.filter((c) => {
-      const expiryDate = new Date(c.expiry_date);
-      return expiryDate > now && expiryDate <= ninetyDaysFromNow;
-    })
-  );
+  const expiringCerts = allCertifications.filter((c) => {
+    const expiryDate = new Date(c.expiry_date);
+    return expiryDate > now && expiryDate <= ninetyDaysFromNow;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,7 +69,17 @@ export default async function BrandDashboard() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Expiry Statistics */}
+        {allCertifications.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Supplier Certifications Overview
+            </h2>
+            <ExpiryStats certifications={allCertifications} />
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Verified Suppliers Card */}
           <div className="rounded-lg bg-white p-6 shadow">
@@ -111,6 +129,12 @@ export default async function BrandDashboard() {
             </h2>
             <div className="space-y-2">
               <a
+                href="/brand/analytics"
+                className="block w-full rounded bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
+              >
+                View Analytics
+              </a>
+              <a
                 href="/brand/suppliers/discover"
                 className="block w-full rounded bg-[#3BCEAC] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#3BCEAC]/90"
               >
@@ -128,8 +152,21 @@ export default async function BrandDashboard() {
           </div>
         </div>
 
+        {/* Expiry Timeline */}
+        {allCertifications.length > 0 && (
+          <div className="rounded-lg bg-white p-6 shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">
+              Upcoming Certificate Expiries
+            </h2>
+            <ExpiryTimeline
+              certifications={allCertifications}
+              viewType="brand"
+            />
+          </div>
+        )}
+
         {/* Connected Suppliers */}
-        <div className="mt-8 rounded-lg bg-white p-6 shadow">
+        <div className="rounded-lg bg-white p-6 shadow">
           <h2 className="mb-4 text-xl font-semibold text-gray-800">
             Connected Suppliers
           </h2>

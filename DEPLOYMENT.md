@@ -59,21 +59,23 @@ Add the following environment variables in Vercel Dashboard → Project Settings
 ### Required Variables
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+# Database - Use Neon with both pooled and direct connections
+# IMPORTANT: Use pooled connection for DATABASE_URL (with -pooler)
+# and direct connection for DIRECT_URL (without -pooler)
+DATABASE_URL=postgresql://neondb_owner:PASSWORD@ep-xxxxx-pooler.REGION.aws.neon.tech/neondb?sslmode=require
+DIRECT_URL=postgresql://neondb_owner:PASSWORD@ep-xxxxx.REGION.aws.neon.tech/neondb?sslmode=require
 
-# Clerk Authentication
+# Clerk Authentication - Use production keys for production environment
 CLERK_SECRET_KEY=sk_live_...
-CLERK_PUBLISHABLE_KEY=pk_live_...
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 
-# AWS S3
+# AWS S3 (Optional - only if using S3 for document storage)
 AWS_S3_BUCKET=your-bucket-name
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=us-east-1
 
-# Email (Resend)
+# Email (Optional - only if using email notifications)
 RESEND_API_KEY=re_...
 ```
 
@@ -83,22 +85,50 @@ Add these to **Production**, **Preview**, and **Development** environments as ne
 
 **Note**: Use different Clerk keys for production vs preview environments.
 
+### 3.4 Clerk Dashboard Configuration
+
+After adding environment variables, configure your Clerk dashboard:
+
+1. **Go to Clerk Dashboard** (https://dashboard.clerk.com)
+2. **Navigate to your application**
+3. **Configure redirect URLs in Paths (or URLs)**:
+   - **After sign-up URL**: `/onboarding`
+   - **After sign-in URL**: `/onboarding`
+4. **Session token configuration**:
+   - Go to Sessions → Customize session token
+   - **No changes needed** - The app uses database-based layout guards instead of JWT claims
+5. **Verify API keys**:
+   - Confirm the Publishable Key and Secret Key in Vercel match your Clerk Dashboard
+   - For production, use `pk_live_...` and `sk_live_...` keys
+   - For development/preview, use `pk_test_...` and `sk_test_...` keys
+
+**IMPORTANT**: The onboarding flow auto-redirects completed users to their dashboard. Don't set redirects to `/dashboard` directly.
+
 ## Step 4: Database Setup
 
 ### 4.1 Create Production Database
 
 Choose one of these options:
 
-#### Option A: Supabase (Recommended)
+#### Option A: Neon (Recommended for Vercel)
+1. Create account at https://neon.tech
+2. Create new project
+3. **IMPORTANT**: Get BOTH connection strings:
+   - **Pooled connection** (with `-pooler`) → Use for `DATABASE_URL`
+   - **Direct connection** (without `-pooler`) → Use for `DIRECT_URL`
+4. Example:
+   ```
+   DATABASE_URL: postgresql://user:pass@ep-xxxxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+   DIRECT_URL:   postgresql://user:pass@ep-xxxxx.region.aws.neon.tech/neondb?sslmode=require
+   ```
+5. **DO NOT** use `channel_binding=require` - it causes failures in Vercel's serverless environment
+
+#### Option B: Supabase
 1. Create account at https://supabase.com
 2. Create new project
 3. Copy connection string from Settings → Database
 4. Format: `postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres`
-
-#### Option B: Neon
-1. Create account at https://neon.tech
-2. Create new project
-3. Copy connection string from dashboard
+5. For Supabase, use the same connection string for both `DATABASE_URL` and `DIRECT_URL`
 
 #### Option C: Other PostgreSQL Provider
 - Ensure SSL is enabled
